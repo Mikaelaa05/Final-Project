@@ -1,9 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 
 namespace Final_Project
 {
@@ -36,6 +39,10 @@ namespace Final_Project
         private int TextureHeight;
         private string action;
         private int gameFrame;
+
+        private Song backgroundmusic;
+        private SoundEffect runSound;
+        private SoundEffect jumpSound;
 
         private List<Coin> spinningCoins = new List<Coin>();
         private Texture2D coinTexture;
@@ -201,9 +208,17 @@ namespace Final_Project
             Rectangle playerSource = new Rectangle(0, 0, TextureWidth, TextureHeight);
             Rectangle playerHitbox = playerSource; // Initialize hitbox with the same size as the source rectangle
 
-            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth * 2, TextureHeight * 2), playerSource, Color.White, playerHitbox);
-            
-            
+            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth + 60, TextureHeight + 45), playerSource, Color.White, playerHitbox);
+
+            backgroundmusic = Content.Load<Song>("PekoraPek");
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(backgroundmusic);
+            MediaPlayer.Volume = 0.1f; // Set volume to 50%
+
+          jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
+          runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
+
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -268,12 +283,19 @@ namespace Final_Project
             {
                 direction = -1;
                 PlayerMove((int)moveSpeed, direction);
-                action = "running"; 
-            } else if (state.IsKeyDown(Keys.D))
+                action = "running";
+                if (gameFrame % 25 == 0 && IsOnGround())
+                        // If jumping, play jump sound
+                            runSound.Play();
+                
+            }
+            else if (state.IsKeyDown(Keys.D))
             {
                 direction = 1;
                 PlayerMove((int)moveSpeed, direction);
                 action = "running";
+                if (gameFrame % 25 == 0 && IsOnGround())
+                    runSound.Play();
             }
             else if (IsOnGround())
             {
@@ -284,7 +306,7 @@ namespace Final_Project
             if (state.IsKeyDown(Keys.Space) && IsOnGround())
             {
                 player.ChangeVelocityY(jumpStrength, true);
-
+                jumpSound.Play();
             }
 
             

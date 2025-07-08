@@ -37,6 +37,12 @@
 /processorParam:TextureFormat=Color
 /build:hitbox.png
 
+#begin Jump.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Jump.wav
+
 #begin mika.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -48,6 +54,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:mika.png
+
+#begin PekoraPek.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:PekoraPek.mp3
 
 #begin Platform 2.png
 /importer:TextureImporter
@@ -73,6 +85,12 @@
 /processorParam:TextureFormat=Color
 /build:Platform 5.png
 
+#begin Run.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Run.wav
+
 #begin snowice.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,4 +114,10 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:spikes.png
+
+#begin Walk.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Walk.wav
 

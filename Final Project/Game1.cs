@@ -30,7 +30,8 @@ namespace Final_Project
 
         private Player player;
         private Texture2D playerTexture;
-        
+        private Texture2D playerHitboxTexture;
+
         private int TextureWidth;
         private int TextureHeight;
         private string action;
@@ -194,10 +195,14 @@ namespace Final_Project
             spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
 
             playerTexture = Content.Load<Texture2D>("mika");
+            playerHitboxTexture = Content.Load<Texture2D>("hitbox");
             TextureWidth = playerTexture.Width / 8;
             TextureHeight = playerTexture.Height / 2;
             Rectangle playerSource = new Rectangle(0, 0, TextureWidth, TextureHeight);
-            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 5), TextureWidth * 2, TextureHeight * 2), playerSource, Color.White);
+            Rectangle playerHitbox = playerSource; // Initialize hitbox with the same size as the source rectangle
+
+            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth * 2, TextureHeight * 2), playerSource, Color.White, playerHitbox);
+            
             
         }
 
@@ -251,28 +256,29 @@ namespace Final_Project
             // Movement keys
             float moveSpeed = 4f;
             float jumpStrength = -10f;
-            bool isGrounded = player.PlayerDisplay.Bottom >= 860; // crude ground check
-
             
+
+            player.UpdateHitbox();
+
             // Move Left
             if (state.IsKeyDown(Keys.A))
             {
                 direction = -1;
-                player.MoveHorizontal((int)moveSpeed, direction);
+                PlayerMove((int)moveSpeed, direction);
                 action = "running"; 
             } else if (state.IsKeyDown(Keys.D))
             {
                 direction = 1;
-                player.MoveHorizontal((int)moveSpeed, direction);
+                PlayerMove((int)moveSpeed, direction);
                 action = "running";
             }
-            else if (isGrounded)
+            else if (IsOnGround())
             {
                 action = "idle"; // If not moving, set action to idle
             }
 
             // Jump (only if grounded)
-            if (state.IsKeyDown(Keys.Space) && isGrounded)
+            if (state.IsKeyDown(Keys.Space) && IsOnGround())
             {
                 player.ChangeVelocityY(jumpStrength, true);
 
@@ -288,20 +294,24 @@ namespace Final_Project
                 action = "jump";
             }
 
-
+            
 
             // Stop falling below ground (simple ground collision)
-            if (player.PlayerDisplay.Bottom <= 860)
+            if (!IsOnGround() || player.VelocityY < 0)
             {
                 // Apply gravity
                 player.ChangeVelocityY(0.2f); // Gravity strength
                 player.MoveVertical((int)player.VelocityY, 1); // Move player vertically based on velocity
-                
 
 
-            } else
+
+            } else if (player.VelocityY > 0) 
             {
-                player.TeleportY(860 - player.PlayerDisplay.Height); // Reset to ground level
+
+                while (IsOnGround())
+                {
+                    player.MoveVertical(1, -1); // Move player up until not colliding with ground
+                }
                 player.ChangeVelocityY(0, true); // Reset vertical velocity
                 //if (action != "running")
                 //    action = "idle";
@@ -310,6 +320,7 @@ namespace Final_Project
 
 
                 playerAnimation(action, gameFrame);
+                
             base.Update(gameTime);
         }
 
@@ -340,6 +351,7 @@ namespace Final_Project
 
 
             _spriteBatch.Draw(playerTexture, player.PlayerDisplay, player.PlayerSource, player.PlayerColor, 0, Vector2.Zero, direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0); // for player
+            _spriteBatch.Draw(playerHitboxTexture, player.PlayerHitbox, player.HitboxSource, Color.Red * 0.5f); // for player hitbox
 
             for (int i = 0; i < SnowflakeCount; i++)
             {
@@ -356,6 +368,64 @@ namespace Final_Project
 
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        private bool IsColliding(Rectangle playerRect)
+        {
+            player.UpdateHitbox();
+            Rectangle hitbox = player.PlayerHitbox;
+
+            foreach (var tile in tiles)
+            {
+                if (tile != null && hitbox.Intersects(tile.TileDisplay))
+                {
+                    return true;
+                }
+            }
+
+            foreach (var tile in verticalTiles)
+            {
+                if (tile != null && hitbox.Intersects(tile.TileDisplay))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        private bool IsOnGround()
+        {
+            player.UpdateHitbox();
+            Rectangle hitbox = player.PlayerHitbox;
+            Rectangle onePixelLower = new Rectangle(hitbox.X, hitbox.Y + 1, hitbox.Width, hitbox.Height);
+            foreach (var tile in tiles)
+            {
+                if (tile != null && onePixelLower.Intersects(tile.TileDisplay))
+                {
+                    return true;
+                }
+            }
+
+            foreach (var tile in verticalTiles)
+            {
+                if (tile != null && onePixelLower.Intersects(tile.TileDisplay))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void PlayerMove(int steps, int dir)
+        {
+            player.MoveHorizontal(steps, dir);
+            player.UpdateHitbox();
+            if (IsColliding(player.PlayerHitbox))
+            {
+                player.MoveHorizontal(-steps, dir); 
+
+            }
         }
 
         private void playerAnimation(string action, int curframe)
@@ -386,5 +456,6 @@ namespace Final_Project
 
             }
         }
+
     }
 }

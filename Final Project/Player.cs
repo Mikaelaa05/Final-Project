@@ -8,6 +8,8 @@ namespace Final_Project
         Texture2D playerTexture;
         Rectangle playerDisplay;
         Rectangle playerSource;
+        Rectangle playerHitbox;
+        Rectangle hitboxSource;
         Color playerColor;
         float velocityY;
 
@@ -23,12 +25,14 @@ namespace Final_Project
             Texture2D playerTexture,
             Rectangle playerDisplay,
             Rectangle playerSource,
-            Color playerColor)
+            Color playerColor, Rectangle playerHitbox)
         {
             this.playerTexture = playerTexture;
             this.playerDisplay = playerDisplay;
             this.playerSource = playerSource;
             this.playerColor = playerColor;
+            this.playerHitbox = playerHitbox;
+            hitboxSource = new Rectangle(0, 0, 32, 32);
         }
 
         public Texture2D PlayerTexture
@@ -46,6 +50,16 @@ namespace Final_Project
         public Color PlayerColor
         {
             get => playerColor;
+        }
+
+        public Rectangle PlayerHitbox
+        {
+            get => playerHitbox;
+        }
+
+        public Rectangle HitboxSource
+        {
+            get => hitboxSource;
         }
         public float VelocityY { get => velocityY ;  }
 
@@ -110,6 +124,11 @@ namespace Final_Project
                 velocityY += newVelocityY;
            
 
+        }
+
+        public void UpdateHitbox()
+        {
+            playerHitbox = new Rectangle (playerDisplay.X + 70, playerDisplay.Y + 15, (int)((float)playerDisplay.Width * 0.3), (int)((float)playerDisplay.Height * 0.8));
         }
 
     }

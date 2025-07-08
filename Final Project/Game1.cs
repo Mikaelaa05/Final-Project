@@ -3,12 +3,11 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Xml.Serialization;
+
 
 namespace Final_Project
 {
@@ -57,6 +56,8 @@ namespace Final_Project
         private bool isHit = false;
         private double hitTimer = 0;
         private const double hitDuration = 0.5; // seconds
+
+        private int coinScore = 0;
 
         // --- HIT COUNTER FOR RESET ---
         private int hitCount = 0;
@@ -123,8 +124,8 @@ namespace Final_Project
             TextureHeight = playerTexture.Height / 3;
 
             //// Call Level1 to set up all level objects
-            Level2();
-            //Level1();
+            //Level2();
+            Level1();
 
             // Snow particle setup
             snowflakePositions = new Vector2[SnowflakeCount];
@@ -169,11 +170,11 @@ namespace Final_Project
             );
 
             // Coins
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(360, 475), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 475), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(1480, 300), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(800, 725), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(360, 475), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 475), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1480, 300), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(680, 725), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 32, 32));
 
 
 
@@ -246,20 +247,16 @@ namespace Final_Project
             floorSpikes.Add(new Spike(spikeTexture, new Rectangle(688, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
             floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1161, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
             floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1204, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
-            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1247, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
-            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1030, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
-            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1074, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
-            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1290, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1247, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));    
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(946, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
             floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1333, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
 
             Rectangle spikeCeilingSource = new Rectangle(2 * 87, 0, 87, 87);
             ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(818, 258, tileWidth, tileHeight), spikeCeilingSource, Color.White));
             ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(860, 258, tileWidth, tileHeight), spikeCeilingSource, Color.White));
             ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(902, 258, tileWidth, tileHeight), spikeCeilingSource, Color.White));
-            ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(902, 688, tileWidth, tileHeight), spikeCeilingSource, Color.White));
-            ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(946, 688, tileWidth, tileHeight), spikeCeilingSource, Color.White));
-            ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(1160, 688, tileWidth, tileHeight), spikeCeilingSource, Color.White));
-            ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(1204, 688, tileWidth, tileHeight), spikeCeilingSource, Color.White));
+            
+            ceilingSpikes.Add(new Spike(spikeTexture, new Rectangle(1118, 688, tileWidth, tileHeight), spikeCeilingSource, Color.White));
 
             Rectangle sideWallSpikeSource = new Rectangle(1 * 87, 0, 87, 87);
             sideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(516, 385, tileWidth, tileHeight), sideWallSpikeSource, Color.White));
@@ -268,6 +265,7 @@ namespace Final_Project
 
             Rectangle oppsideWallSpikeSource = new Rectangle(3 * 87, 0, 87, 87);
             oppsideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(688, 430, tileWidth, tileHeight), oppsideWallSpikeSource, Color.White));
+            
 
             enemyCount = 3;
             enemies = new Enemy[enemyCount];
@@ -301,12 +299,12 @@ namespace Final_Project
             );
 
             // Coins
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(1490, 750), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(700, 100), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 330), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1490, 750), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(700, 100), 32, 32));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 330), 32, 32));
 
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(1110, 750), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1110, 750), 32, 32));
 
 
 
@@ -596,19 +594,25 @@ namespace Final_Project
                     }
                 }
 
-                foreach (var s in allSpikes)
-                {
-                    if (player.PlayerHitbox.Intersects(s.Display))
-                    {
-                        player.ChangeVelocityY(-5, true); // Apply knockback
-                        player.MoveHorizontal(10, direction * -1); // Move player away from spike
-                        player.UpdateHitbox();
-                        action = "hit";
-                    }
-                }
+                bool spikeCollision = false;
                 foreach (var spike in allSpikes)
                 {
-                    if (player.PlayerHitbox.Intersects(spike.Display) && !isHit)
+                    // Use Hitbox for spike collision
+                    if (player.PlayerHitbox.Intersects(spike.Hitbox))
+                    {
+
+
+                        spikeCollision = true;
+                        // Apply knockback for visual feedback
+                        player.ChangeVelocityY(-5, true);
+                        player.MoveHorizontal(10, direction * -1);
+                        player.UpdateHitbox();
+                        action = "hit";
+                        
+
+                    }
+
+                    if (spikeCollision && !isHit)
                     {
                         isHit = true;
                         hitTimer = 0;
@@ -617,18 +621,25 @@ namespace Final_Project
                         if (hitCount >= maxHits)
                         {
                             action = "death";
-                            // Reset player position to starting point
                             player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
                             player.ChangeVelocityY(0, true);
                             player.UpdateHitbox();
 
-                            // Reset hit state and counter
                             hitCount = 0;
                             isHit = false;
                             hitTimer = 0;
-                            // Optionally: add a sound or visual cue here
                         }
-                        break;
+                        
+                    }
+                }
+
+                foreach (var coin in spinningCoins)
+                {
+                    if (!coin.Collected && player.PlayerHitbox.Intersects(coin.GetCollisionBox()))
+                    {
+                        coin.Collect();
+                        coinScore++;
+                        // Optionally: play a sound effect here
                     }
                 }
 

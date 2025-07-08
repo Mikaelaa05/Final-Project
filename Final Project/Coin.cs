@@ -17,9 +17,10 @@ namespace Final_Project
         private int drawWidth;
         private int drawHeight;
 
-        public bool Collected { get; internal set; }
+        private bool collected = false;
+        public bool Collected => collected;
 
-        public Coin(Texture2D texture, Vector2 position, int v, int v1)
+        public Coin(Texture2D texture, Vector2 position, int drawWidth, int drawHeight)
         {
             this.texture = texture;
             this.position = position;
@@ -31,19 +32,33 @@ namespace Final_Project
 
         public void Update(GameTime gameTime)
         {
-            timer += gameTime.ElapsedGameTime.TotalMilliseconds; // Update the timer with elapsed time
-            if (timer >= interval) // Check if enough time has passed to switch frames
+            if (collected) return;
+
+            timer += gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (timer >= interval)
             {
-                currentFrame = (currentFrame + 1) % frameCount; // Move to the next frame, looping back to the start
-                timer = 0; // Reset the timer
+                currentFrame = (currentFrame + 1) % frameCount;
+                timer = 0;
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, 0, frameWidth, frameHeight); // Calculate the source rectangle for the current frame
+            if (collected) return;
+
+            Rectangle sourceRect = new Rectangle(currentFrame * frameWidth, 0, frameWidth, frameHeight);
             Rectangle destRect = new Rectangle((int)position.X, (int)position.Y, drawWidth, drawHeight);
-            spriteBatch.Draw(texture, position, sourceRect, Color.White); // Draw the coin using the current frame's source rectangle
+            spriteBatch.Draw(texture, destRect, sourceRect, Color.White);   
+
+        }
+        public Rectangle GetCollisionBox()
+        {
+            return new Rectangle((int)position.X, (int)position.Y, drawWidth, drawHeight);
+        }
+
+        public void Collect()
+        {
+            collected = true;
         }
     }
 }

@@ -35,6 +35,8 @@ namespace Final_Project
         private Texture2D playerTexture;
         private Texture2D playerHitboxTexture;
 
+        private Enemy[] enemies;
+
         private int TextureWidth;
         private int TextureHeight;
         private string action;
@@ -58,6 +60,8 @@ namespace Final_Project
         private float[] snowflakeSpeeds;
         private const int SnowflakeCount = 100;
 
+        private int enemyCount;
+
         private string GameState;
         public Game1()
         {
@@ -73,6 +77,7 @@ namespace Final_Project
             _graphics.ApplyChanges();
 
             action = "idle";
+            enemyCount = 1; // No enemies in this level
             GameState = "menu";
             gameFrame = 0;
             base.Initialize();
@@ -219,6 +224,14 @@ namespace Final_Project
 
           jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
           runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
+
+            //Enemies
+            for(int i = 0; i < enemyCount; i++)
+            {
+                enemies = new Enemy[enemyCount];
+                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, 64, 64), new Rectangle(0, 0, 64, 64), Color.SlateGray,playerHitbox,);
+                enemies[i].UpdateHitbox();
+            }
 
 
         }
@@ -367,12 +380,12 @@ namespace Final_Project
 
 
 
-                playerAnimation(action, gameFrame);
+                player.playerAnimation(action, gameFrame);
             }
 
             base.Update(gameTime);
         }
-
+        
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.White);
@@ -382,9 +395,10 @@ namespace Final_Project
 
             if (GameState == "menu")
             {
-                _spriteBatch.DrawString(Content.Load<SpriteFont>("MenuFont"), "Mika is Peak!!!", new Vector2(25, 25), Color.Magenta);
-                
-               
+                _spriteBatch.DrawString(Content.Load<SpriteFont>("MenuFont"), "Mika is Peak!!!", new Vector2(25, 25), Color.Black);
+                _spriteBatch.DrawString(Content.Load<SpriteFont>("MenuFont"), "Mika is Peak!!!", new Vector2(30, 30), Color.Magenta);
+
+
             }
             else if (GameState == "play")
             {
@@ -407,9 +421,14 @@ namespace Final_Project
                 foreach (var s in oppsideWallSpikes)
                     _spriteBatch.Draw(s.Texture, s.Display, s.Source, s.Color);
 
+                foreach (var enemy in enemies)
+                {
+                   
+                    _spriteBatch.Draw(enemy.EnemyTexture, enemy.EnemyDisplay, enemy.EnemySource, enemy.EnemyColor, 0, Vector2.Zero, enemy.Dir < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
+                }
 
                 _spriteBatch.Draw(playerTexture, player.PlayerDisplay, player.PlayerSource, player.PlayerColor, 0, Vector2.Zero, direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0); // for player
-                _spriteBatch.Draw(playerHitboxTexture, player.PlayerHitbox, player.HitboxSource, Color.Red * 0.5f); // for player hitbox
+                
 
                 foreach (var coin in spinningCoins)
                     coin.Draw(_spriteBatch);
@@ -490,31 +509,7 @@ namespace Final_Project
         }
         
 
-        private void playerAnimation(string action, int curframe)
-        {
-            
-            if (action == "idle")
-            {
-                player.PlayerAnimator(curframe, 0, 3);
-            }
-            else if (action == "running")
-            {
-                player.PlayerAnimator(curframe, 4, 7);
-            }
-            else if (action == "jump")
-            {
-                player.PlayerAnimator(curframe, 8, 8);
-            }
-            else if (action == "falling")
-            {
-                player.PlayerAnimator(curframe, 9, 9);
-            }
-            else
-            {
-                player.PlayerAnimator(curframe, 0, 3); // Default to idle if action is unknown
-
-            }
-        }
+       
 
     }
 }

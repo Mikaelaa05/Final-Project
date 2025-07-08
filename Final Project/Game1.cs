@@ -7,6 +7,8 @@ using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace Final_Project
 {
@@ -59,6 +61,8 @@ namespace Final_Project
         private const int SnowflakeCount = 100;
 
         private string GameState;
+
+        bool checkSave, checkLoad;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -75,6 +79,9 @@ namespace Final_Project
             action = "idle";
             GameState = "menu";
             gameFrame = 0;
+
+            checkSave = false;
+            checkLoad = false;
             base.Initialize();
         }
 
@@ -368,6 +375,61 @@ namespace Final_Project
 
 
                 playerAnimation(action, gameFrame);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.P) && !checkSave) // Save
+            {
+                GameData playerPos = new GameData();
+                playerPos.playerPos = player.PlayerDisplay;
+
+                //GameData[] enemyPos = new GameData[enemyLength];
+                //for (int i = 0; i < enemyLength; i++)
+                //{
+                //    enemyPos[i] = new GameData();
+                //    enemyPos[i].enemyPos = enemies[i].EnemyDisplay;
+                //}
+
+                XmlSerializer saveData = new XmlSerializer(typeof(GameData));
+
+                StreamWriter sw = new StreamWriter("game_save.txt");
+                saveData.Serialize(sw, playerPos);
+                //saveData.Serialize(sw, enemyPos);
+
+                sw.Close();
+
+                checkSave = true;
+            }
+            else if (Keyboard.GetState().IsKeyUp(Keys.P))
+            {
+                checkSave = false;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.L) && !checkLoad) // Load
+            {
+                XmlSerializer loadData = new XmlSerializer(typeof(GameData));
+                StreamReader sr = new StreamReader("game_save.txt");
+
+                GameData playerPos = (GameData)loadData.Deserialize(sr);
+                player.SetPosition(playerPos.playerPos.X, playerPos.playerPos.Y);
+                Console.WriteLine(playerPos.playerPos.X);
+                Console.WriteLine(playerPos.playerPos.Y);
+
+                //GameData[] enemyPos = (GameData[])loadData.Deserialize(sr);
+                //for (int i = 0; i < enemyLength; i++)
+                //{
+                //    enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
+                //    Console.WriteLine(enemyPos[i].enemyPos.X);
+                //    Console.WriteLine(enemyPos[i].enemyPos.Y);
+                //}
+                sr.Close();
+
+                player.ChangeVelocityY(0, true); // Reset vertical velocity after loading
+
+                checkLoad = true;
+            }
+            else if (Keyboard.GetState().IsKeyUp(Keys.L))
+            {
+                checkLoad = false;
             }
 
             base.Update(gameTime);

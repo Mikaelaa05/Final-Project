@@ -43,6 +43,13 @@
 /processorParam:Quality=Best
 /build:Jump.wav
 
+#begin MenuFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:MenuFont.spritefont
+
 #begin mika.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -117,7 +117,7 @@ namespace Final_Project
 
             int animationLength = endFrame - startFrame + 1;
             int textureX = playerTexture.Width / 8;
-            int textureY = playerTexture.Height / 2;
+            int textureY = playerTexture.Height / 3;
             currentFrame = (currentFrame / 6) % animationLength;
 
             int frameX = (startFrame + currentFrame) % 8;
@@ -157,7 +157,11 @@ namespace Final_Project
             }
             else if (action == "hit")
             {
-                PlayerAnimator(curframe, 1);
+                PlayerAnimator(curframe, 16, 19);
+            }
+            else if (action == "death")
+            {
+                PlayerAnimator(curframe, 20, 23);
             }
             else if (action == "falling")
             {

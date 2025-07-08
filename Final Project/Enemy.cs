@@ -126,7 +126,7 @@ namespace Final_Project
         {
             int animationLength = endFrame - startFrame + 1;
             int textureX = enemyTexture.Width / 8;
-            int textureY = enemyTexture.Height / 2;
+            int textureY = enemyTexture.Height / 3;
             currentFrame = (currentFrame / 6) % animationLength;
 
             int frameX = (startFrame + currentFrame) % 8;

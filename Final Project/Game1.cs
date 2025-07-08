@@ -226,7 +226,7 @@ namespace Final_Project
             playerTexture = Content.Load<Texture2D>("mika");
             playerHitboxTexture = Content.Load<Texture2D>("hitbox");
             TextureWidth = playerTexture.Width / 8;
-            TextureHeight = playerTexture.Height / 2;
+            TextureHeight = playerTexture.Height / 3;
             Rectangle playerSource = new Rectangle(0, 0, TextureWidth, TextureHeight);
             Rectangle playerHitbox = playerSource; // Initialize hitbox with the same size as the source rectangle
 
@@ -419,7 +419,7 @@ namespace Final_Project
                         player.ChangeVelocityY(-5, true); // Apply knockback
                         player.MoveHorizontal(10, direction * -1); // Move player away from spike
                         player.UpdateHitbox();
-                        action = "jump";
+                        action = "hit";
                     }
                 }
                 foreach (var spike in allSpikes)
@@ -432,6 +432,7 @@ namespace Final_Project
                                     // --- RESET IF HIT 3 TIMES ---
                         if (hitCount >= maxHits)
                         {
+                            action = "death";
                             // Reset player position to starting point
                             player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
                             player.ChangeVelocityY(0, true);
@@ -448,14 +449,10 @@ namespace Final_Project
                 }
 
                 foreach (var e in enemies){
-                    if (player.PlayerHitbox.Intersects(e.EnemyHitbox) && e.Alive && !isHit)
+                    if (player.PlayerDisplay.Intersects(e.EnemyHitbox) && player.Attackframes > 0)
+                        e.Death();
+                    else if (player.PlayerHitbox.Intersects(e.EnemyHitbox) && e.Alive && !isHit)
                     {
-                        if (player.Attackframes > 5)
-                        {
-                            e.Death(); // If player attacks, enemy dies
-                        }
-                        else
-                        {
                             isHit = true;
                             hitTimer = 0;
                             hitCount++;
@@ -463,11 +460,12 @@ namespace Final_Project
                             player.ChangeVelocityY(-4, true); // Apply knockback
                             player.MoveHorizontal(10, direction * -1); // Move player away from spike
                             player.UpdateHitbox();
-                            action = "jump";
+                            action = "hit";
 
                             if (hitCount >= maxHits)
                             {
-                                // Reset player position to starting point
+                            // Reset player position to starting point
+                            action = "death";
                                 player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
                                 player.ChangeVelocityY(0, true);
                                 player.UpdateHitbox();
@@ -478,7 +476,7 @@ namespace Final_Project
                                 // Optionally: add a sound or visual cue here
                             }
                             break;
-                        }
+                        
                     }
                 }
 

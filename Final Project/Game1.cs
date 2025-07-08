@@ -628,7 +628,9 @@ namespace Final_Project
                             hitCount = 0;
                             isHit = false;
                             hitTimer = 0;
+
                         }
+                        break;
                         
                     }
                 }

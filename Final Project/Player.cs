@@ -13,6 +13,7 @@ namespace Final_Project
         Color playerColor;
         float velocityY;
 
+        int attackframes;
 
 
         public Player(
@@ -27,6 +28,7 @@ namespace Final_Project
             this.playerColor = playerColor;
             this.playerHitbox = playerHitbox;
             hitboxSource = new Rectangle(0, 0, 32, 32);
+            attackframes = -1;
         }
 
         public Texture2D PlayerTexture
@@ -55,8 +57,21 @@ namespace Final_Project
         {
             get => hitboxSource;
         }
+
+        public int Attackframes
+        {
+            get => attackframes;
+        }
         public float VelocityY { get => velocityY ;  }
 
+        public void IncrementFrameCounter()
+        {
+            attackframes++;
+            if(attackframes >= 30)
+            {
+                attackframes = -1; // Reset after 6 frames
+            }
+        }
         public void MoveVertical(int steps, int dir)
         {
             playerDisplay.Y += steps * dir;
@@ -93,8 +108,13 @@ namespace Final_Project
             );
         }
 
-        public void PlayerAnimator(int currentFrame, int startFrame, int endFrame)
+        public void PlayerAnimator(int currentFrame, int startFrame, int endFrame = -1)
         {
+            if (endFrame == -1)
+            {
+                endFrame = startFrame;
+            }
+
             int animationLength = endFrame - startFrame + 1;
             int textureX = playerTexture.Width / 8;
             int textureY = playerTexture.Height / 2;
@@ -133,17 +153,20 @@ namespace Final_Project
             }
             else if (action == "jump")
             {
-                PlayerAnimator(curframe, 8, 8);
+                PlayerAnimator(curframe, 8);
             }
             else if (action == "hit")
             {
-                PlayerAnimator(curframe, 10, 10);
+                PlayerAnimator(curframe, 1);
             }
             else if (action == "falling")
             {
-                PlayerAnimator(curframe, 9, 9);
+                PlayerAnimator(curframe, 9);
             }
-            else
+            else if (action == "attack") {
+
+                PlayerAnimator(curframe, 10 + (int)attackframes / 5);
+            } else
             {
                 PlayerAnimator(curframe, 0, 3); // Default to idle if action is unknown
 

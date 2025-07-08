@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Net.Http;
 
 namespace Final_Project
 {
@@ -12,11 +13,14 @@ namespace Final_Project
         Rectangle hitboxSource;
         Color enemyColor;
         float velocityY;
+        string enemyAction;
 
         int startpos;
         int endpos;
         int ylevel;
         int dir;
+
+        bool alive;
 
         public Enemy(
             Texture2D enemyTexture,
@@ -33,7 +37,10 @@ namespace Final_Project
             this.startpos = startpos;
             this.endpos = endpos;
             this.ylevel = ylevel;
+
             dir = 1;
+            enemyAction = "idle";
+            alive = true;
         }
 
         public Texture2D EnemyTexture
@@ -67,6 +74,11 @@ namespace Final_Project
         public int Dir        
         {
             get => dir;
+        }
+
+        public string EnemyAction
+        {
+            get => enemyAction;
         }
 
         public void MoveVertical(int steps, int dir)
@@ -106,6 +118,10 @@ namespace Final_Project
             );
         }
 
+        public bool Alive
+        {
+            get => alive;
+        }
         public void EnemyAnimator(int currentFrame, int startFrame, int endFrame)
         {
             int animationLength = endFrame - startFrame + 1;
@@ -119,7 +135,16 @@ namespace Final_Project
             enemySource = new Rectangle(frameX * textureX, frameY * textureY, textureX, textureY);
         }
 
-        
+
+        public void setPath (int startpos, int endpos, int ylevel)
+        {
+            this.startpos = startpos;
+            this.endpos = endpos;
+            this.ylevel = ylevel;
+            SetPosition(startpos, ylevel);
+        }
+
+
 
         public void ChangeVelocityY(float newVelocityY, bool setToggle = false)
         {
@@ -133,6 +158,28 @@ namespace Final_Project
 
         }
 
+        public void EnemyPathing() 
+        {
+            MoveHorizontal(1, dir);
+            enemyAction = "running";
+
+            if(dir == 1 && enemyDisplay.X >= endpos)
+            {
+                dir = -1;
+
+            } else if (dir == -1 && enemyDisplay.X <= startpos) 
+            {
+                dir = 1;
+            }
+        }
+
+        public void Death()
+        {
+            alive = false;
+            enemyAction = "dead";
+            enemyDisplay.X = -1000; // Move off-screen
+            enemyDisplay.Y = -1000; // Move off-screen
+        }
         public void enemyAnimation(string action, int curframe)
         {
 

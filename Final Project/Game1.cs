@@ -85,8 +85,7 @@ namespace Final_Project
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
 
-            action = "idle";
-            enemyCount = 1; // No enemies in this level
+            action = "idle"; // No enemies in this level
             GameState = "menu";
             gameFrame = 0;
             base.Initialize();
@@ -234,14 +233,19 @@ namespace Final_Project
           jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
           runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
 
+            enemyCount = 3;
+            enemies = new Enemy[enemyCount];
+
             //Enemies
             for(int i = 0; i < enemyCount; i++)
             {
-                enemies = new Enemy[enemyCount];
-                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, 64, 64), new Rectangle(0, 0, 64, 64), Color.SlateGray,playerHitbox, 0, 0, 0);
+                
+                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, TextureWidth + 60, TextureHeight + 45), new Rectangle(0, 0, TextureWidth, TextureHeight), Color.DarkRed,playerHitbox, 0, 0, 0);
                 enemies[i].UpdateHitbox();
             }
-
+            enemies[0].setPath(0 + (43 * 15), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 3) - 10);
+            enemies[1].setPath(0 + (43 * 12), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 8) - 10);
+            enemies[2].setPath(0 + (43 * 6), 0 + (43 * 8), Window.ClientBounds.Height - (43 * 8) - 10);
 
         }
 
@@ -346,7 +350,20 @@ namespace Final_Project
                     action = "jump";
                 }
 
+                if (state.IsKeyDown(Keys.F))
+                {
+                    if(player.Attackframes == -1)
+                        player.IncrementFrameCounter();
 
+
+                }
+
+                if (player.Attackframes > -1)
+                {
+                    action = "attack";
+                    player.IncrementFrameCounter();
+                    
+                }
 
                 // Stop falling below ground (simple ground collision)
                 if (!IsOnGround() || player.VelocityY < 0)
@@ -423,6 +440,41 @@ namespace Final_Project
                     }
                 }
 
+                foreach (var e in enemies){
+                    if (player.PlayerHitbox.Intersects(e.EnemyHitbox) && e.Alive && !isHit)
+                    {
+                        if (player.Attackframes > 5)
+                        {
+                            e.Death(); // If player attacks, enemy dies
+                        }
+                        else
+                        {
+                            isHit = true;
+                            hitTimer = 0;
+                            hitCount++;
+
+                            player.ChangeVelocityY(-4, true); // Apply knockback
+                            player.MoveHorizontal(10, direction * -1); // Move player away from spike
+                            player.UpdateHitbox();
+                            action = "jump";
+
+                            if (hitCount >= maxHits)
+                            {
+                                // Reset player position to starting point
+                                player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
+                                player.ChangeVelocityY(0, true);
+                                player.UpdateHitbox();
+                                // Reset hit state and counter
+                                hitCount = 0;
+                                isHit = false;
+                                hitTimer = 0;
+                                // Optionally: add a sound or visual cue here
+                            }
+                            break;
+                        }
+                    }
+                }
+
                 // --- HIT ANIMATION LOGIC ---
                 if (isHit)
                 {
@@ -437,6 +489,13 @@ namespace Final_Project
 
 
                 player.playerAnimation(action, gameFrame);
+            }
+
+            foreach(Enemy e in enemies)
+            {
+                e.EnemyPathing();
+                e.UpdateHitbox();
+                e.enemyAnimation(e.EnemyAction, gameFrame);
             }
 
             base.Update(gameTime);
@@ -481,7 +540,7 @@ namespace Final_Project
 
                 foreach (var enemy in enemies)
                 {
-                   
+                   if(enemy.Alive)
                     _spriteBatch.Draw(enemy.EnemyTexture, enemy.EnemyDisplay, enemy.EnemySource, enemy.EnemyColor, 0, Vector2.Zero, enemy.Dir < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
                 }
 
@@ -524,8 +583,6 @@ namespace Final_Project
                 Rectangle snowRect = new Rectangle((int)snowflakePositions[i].X, (int)snowflakePositions[i].Y, 3, 3);
                 _spriteBatch.Draw(whitePixel, snowRect, Color.White);
             }
-
-            DrawHealthBar();
 
             _spriteBatch.End();
             base.Draw(gameTime);

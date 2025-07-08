@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace Final_Project
 {
@@ -14,19 +13,6 @@ namespace Final_Project
         Color playerColor;
         float velocityY;
 
-        // Knockback variables
-        public Vector2 knockbackVelocity = Vector2.Zero;
-        public float knockbackDuration = 0f;
-        public Vector2 position;
-        public bool IsKnockbackActive;
-        public const float knockbackTime = 0.2f; // duration in seconds
-        public const float knockbackForce = 5f;
-
-
-        //public int HitboxMarginX = 25;      // Horizontal padding
-        //public int HitboxMarginTop = 15;    // Top padding
-        //public int HitboxMarginBottom = 5;  // Bottom padding
-
 
 
         public Player(
@@ -36,7 +22,7 @@ namespace Final_Project
             Color playerColor, Rectangle playerHitbox)
         {
             this.playerTexture = playerTexture;
-            this.PlayerDisplay = playerDisplay;
+            this.playerDisplay = playerDisplay;
             this.playerSource = playerSource;
             this.playerColor = playerColor;
             this.playerHitbox = playerHitbox;
@@ -50,13 +36,15 @@ namespace Final_Project
         public Rectangle PlayerDisplay
         {
             get => playerDisplay;
-            set => playerDisplay = value;
         }
         public Rectangle PlayerSource
         {
             get => playerSource;
         }
-        public Color PlayerColor { get; set; } = Color.White;
+        public Color PlayerColor
+        {
+            get => playerColor;
+        }
 
         public Rectangle PlayerHitbox
         {
@@ -71,22 +59,23 @@ namespace Final_Project
 
         public void MoveVertical(int steps, int dir)
         {
-            PlayerDisplay = new Rectangle(PlayerDisplay.X, PlayerDisplay.Y + steps * dir, PlayerDisplay.Width, PlayerDisplay.Height);
+            playerDisplay.Y += steps * dir;
         }
 
         public void MoveHorizontal(int steps, int dir)
         {
-            PlayerDisplay = new Rectangle(PlayerDisplay.X + steps * dir, PlayerDisplay.Y, PlayerDisplay.Width, PlayerDisplay.Height);
+            playerDisplay.X += steps * dir;
         }
 
         public void TeleportY(int dest)
         {
-            PlayerDisplay = new Rectangle(PlayerDisplay.X, dest, PlayerDisplay.Width, PlayerDisplay.Height);
+            playerDisplay.Y = dest;
         }
 
         public void SetPosition(int x, int y)
         {
-            PlayerDisplay = new Rectangle(x, y, PlayerDisplay.Width, PlayerDisplay.Height);
+            playerDisplay.X = x;
+            playerDisplay.Y = y;
         }
 
         public void SetSource(Rectangle newSource)
@@ -97,10 +86,10 @@ namespace Final_Project
         public Rectangle GetHitbox(int marginX, int marginTop, int marginBottom)
         {
             return new Rectangle(
-                PlayerDisplay.X + marginX,
-                PlayerDisplay.Y + marginTop,
-                PlayerDisplay.Width - 2 * marginX,
-                PlayerDisplay.Height - marginTop - marginBottom
+                playerDisplay.X + marginX,
+                playerDisplay.Y + marginTop,
+                playerDisplay.Width - 2 * marginX,
+                playerDisplay.Height - marginTop - marginBottom
             );
         }
 
@@ -131,14 +120,35 @@ namespace Final_Project
 
         }
 
-        public void UpdateHitbox()
+        public void playerAnimation(string action, int curframe)
         {
-            playerHitbox = new Rectangle(PlayerDisplay.X + 55, PlayerDisplay.Y + 15, (int)((float)PlayerDisplay.Width * 0.3), (int)((float)PlayerDisplay.Height * 0.8));
+
+            if (action == "idle")
+            {
+                PlayerAnimator(curframe, 0, 3);
+            }
+            else if (action == "running")
+            {
+                PlayerAnimator(curframe, 4, 7);
+            }
+            else if (action == "jump")
+            {
+                PlayerAnimator(curframe, 8, 8);
+            }
+            else if (action == "falling")
+            {
+                PlayerAnimator(curframe, 9, 9);
+            }
+            else
+            {
+                PlayerAnimator(curframe, 0, 3); // Default to idle if action is unknown
+
+            }
         }
 
-        public void SetColor(Color color)
+        public void UpdateHitbox()
         {
-            playerColor = color;
+            playerHitbox = new Rectangle(playerDisplay.X + 55, playerDisplay.Y + 15, (int)((float)playerDisplay.Width * 0.3), (int)((float)playerDisplay.Height * 0.8));
         }
 
     }

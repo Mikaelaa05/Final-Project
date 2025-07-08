@@ -368,7 +368,7 @@ namespace Final_Project
                     if (hitCount >= maxHits)
                     {
                         // Reset player position to starting point
-                        player.PlayerDisplay = new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth + 60, TextureHeight + 45);
+                        player.SetPosition(100, Window.ClientBounds.Height-(25 * 6));
                         player.ChangeVelocityY(0, true);
                         player.UpdateHitbox();
 
@@ -422,6 +422,9 @@ namespace Final_Project
             foreach (var s in oppsideWallSpikes)
                 _spriteBatch.Draw(s.Texture, s.Display, s.Source, s.Color);
 
+            // --- HEALTH BAR DRAW ---
+            DrawHealthBar();
+
             // --- PLAYER FLASHING EFFECT ---
             bool drawPlayer = true; // Default to drawing player
             if (isHit) // if player is hit, apply flashing effect
@@ -459,6 +462,31 @@ namespace Final_Project
 
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        // --- HEALTH BAR HELPER METHOD ---
+        private void DrawHealthBar()
+        {
+            // Health bar position and size
+            int barWidth = 200;
+            int barHeight = 25;
+            int barX = 30;
+            int barY = 30;
+
+            // Calculate health ratio
+            float healthRatio = (float)(maxHits - hitCount) / maxHits;
+            int healthWidth = (int)(barWidth * healthRatio);
+
+            // Draw background (gray)
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX, barY, barWidth, barHeight), Color.Gray * 0.5f);
+            // Draw health (red)
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX, barY, healthWidth, barHeight), Color.Red);
+            // Draw border (black)
+            int borderThickness = 2;
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY - borderThickness, barWidth + borderThickness * 2, borderThickness), Color.Black); // Top
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY + barHeight, barWidth + borderThickness * 2, borderThickness), Color.Black); // Bottom
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY, borderThickness, barHeight), Color.Black); // Left
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX + barWidth, barY, borderThickness, barHeight), Color.Black); // Right
         }
 
         private bool IsColliding(Rectangle playerRect)

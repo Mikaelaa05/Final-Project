@@ -305,20 +305,29 @@ namespace Final_Project
                 // Apply gravity
                 player.ChangeVelocityY(0.2f); // Gravity strength
                 player.MoveVertical((int)player.VelocityY, 1); // Move player vertically based on velocity
+                player.UpdateHitbox();
 
-
-
-            } else if (player.VelocityY > 0) 
-            {
-
-                while (IsOnGround())
+                if (IsColliding(player.PlayerHitbox)) 
                 {
-                    player.MoveVertical(1, -1); // Move player up until not colliding with ground
+                    player.MoveVertical((int)player.VelocityY, -1);
+                    player.ChangeVelocityY(1, true);
                 }
-                player.ChangeVelocityY(0, true); // Reset vertical velocity
-                //if (action != "running")
-                //    action = "idle";
+
+
             }
+            else 
+                    {
+
+                        while (IsOnGround())
+                        {
+
+                            player.MoveVertical(1, -1); // Move player up until not colliding with ground
+                            player.UpdateHitbox();
+                        }
+                        player.ChangeVelocityY(0, true); // Reset vertical velocity
+                                                         //if (action != "running")
+                                                         //    action = "idle";
+                    }
 
 
 
@@ -404,9 +413,12 @@ namespace Final_Project
             Rectangle onePixelLower = new Rectangle(hitbox.X, hitbox.Y + 1, hitbox.Width, hitbox.Height);
             foreach (var tile in tiles)
             {
-                if (tile != null && onePixelLower.Intersects(tile.TileDisplay))
+                if (onePixelLower.Y <= tile.TileDisplay.Y - tile.Texture.Height / 2)
                 {
-                    return true;
+                    if (tile != null && onePixelLower.Intersects(tile.TileDisplay))
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -430,6 +442,7 @@ namespace Final_Project
 
             }
         }
+        
 
         private void playerAnimation(string action, int curframe)
         {

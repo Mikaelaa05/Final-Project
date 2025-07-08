@@ -128,7 +128,7 @@ namespace Final_Project
 
         public void UpdateHitbox()
         {
-            playerHitbox = new Rectangle (playerDisplay.X + 70, playerDisplay.Y + 15, (int)((float)playerDisplay.Width * 0.3), (int)((float)playerDisplay.Height * 0.8));
+            playerHitbox = new Rectangle (playerDisplay.X + 55, playerDisplay.Y + 15, (int)((float)playerDisplay.Width * 0.3), (int)((float)playerDisplay.Height * 0.8));
         }
 
     }

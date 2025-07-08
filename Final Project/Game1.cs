@@ -692,6 +692,11 @@ namespace Final_Project
                 GameData playerPos = new GameData();
                 playerPos.playerPos = player.PlayerDisplay;
 
+                XmlSerializer saveData = new XmlSerializer(typeof(GameData));
+
+                StreamWriter sw = new StreamWriter("player_save.txt");
+                saveData.Serialize(sw, playerPos);
+
                 GameData[] enemyPos = new GameData[enemyCount];
                 for (int i = 0; i < enemyCount; i++)
                 {
@@ -699,13 +704,13 @@ namespace Final_Project
                     enemyPos[i].enemyPos = enemies[i].EnemyDisplay;
                 }
 
-                XmlSerializer saveData = new XmlSerializer(typeof(GameData));
+                XmlSerializer saveDataArray = new XmlSerializer(typeof(GameData[]));
 
-                StreamWriter sw = new StreamWriter("game_save.txt");
-                saveData.Serialize(sw, playerPos);
-                saveData.Serialize(sw, enemyPos);
+                StreamWriter sw1 = new StreamWriter("enemy_save.txt");
+                saveDataArray.Serialize(sw1, enemyPos);
 
                 sw.Close();
+                sw1.Close();
 
                 checkSave = true;
             }
@@ -717,20 +722,23 @@ namespace Final_Project
             if (Keyboard.GetState().IsKeyDown(Keys.L) && !checkLoad) // Load
             {
                 XmlSerializer loadData = new XmlSerializer(typeof(GameData));
-                StreamReader sr = new StreamReader("game_save.txt");
+                StreamReader sr = new StreamReader("player_save.txt");
+                XmlSerializer loadDataArray = new XmlSerializer(typeof(GameData[]));
+                StreamReader sr1 = new StreamReader("enemy_save.txt");
 
                 GameData playerPos = (GameData)loadData.Deserialize(sr);
                 player.SetPosition(playerPos.playerPos.X, playerPos.playerPos.Y);
                 Console.WriteLine(playerPos.playerPos.X);
                 Console.WriteLine(playerPos.playerPos.Y);
 
-                GameData[] enemyPos = (GameData[])loadData.Deserialize(sr);
+                GameData[] enemyPos = (GameData[])loadDataArray.Deserialize(sr1);
                 for (int i = 0; i < enemyCount; i++)
                 {
                     enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
                     
                 }
                 sr.Close();
+                sr1.Close();
 
                 player.ChangeVelocityY(0, true); // Reset vertical velocity after loading
 

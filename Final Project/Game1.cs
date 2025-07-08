@@ -51,6 +51,15 @@ namespace Final_Project
 
         private int direction;
 
+        private bool isHit = false;
+        private double hitTimer = 0;
+        private const double hitDuration = 0.5; // seconds
+
+        // --- HIT COUNTER FOR RESET ---
+        private int hitCount = 0;
+        private const int maxHits = 3;
+
+
         private int tileWidth = 43;
         private int tileHeight = 43;
 
@@ -229,7 +238,7 @@ namespace Final_Project
             for(int i = 0; i < enemyCount; i++)
             {
                 enemies = new Enemy[enemyCount];
-                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, 64, 64), new Rectangle(0, 0, 64, 64), Color.SlateGray,playerHitbox,);
+                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, 64, 64), new Rectangle(0, 0, 64, 64), Color.SlateGray,playerHitbox, 0, 0, 0);
                 enemies[i].UpdateHitbox();
             }
 
@@ -238,6 +247,8 @@ namespace Final_Project
 
         protected override void Update(GameTime gameTime)
         {
+            Color defaultPlayerColor = Color.White;
+
             if (GameState == "menu")
             {
                 if (Keyboard.GetState().IsKeyDown(Keys.Enter))
@@ -301,7 +312,6 @@ namespace Final_Project
                     PlayerMove((int)moveSpeed, direction);
                     action = "running";
                     if (gameFrame % 25 == 0 && IsOnGround())
-                        // If jumping, play jump sound
                         runSound.Play();
 
                 }
@@ -378,6 +388,52 @@ namespace Final_Project
                     }
                 }
 
+                foreach (var s in allSpikes)
+                {
+                    if (player.PlayerHitbox.Intersects(s.Display))
+                    {
+                        player.ChangeVelocityY(-5, true); // Apply knockback
+                        player.MoveHorizontal(10, direction * -1); // Move player away from spike
+                        player.UpdateHitbox();
+                        action = "jump";
+                    }
+                }
+                foreach (var spike in allSpikes)
+                {
+                    if (player.PlayerHitbox.Intersects(spike.Display) && !isHit)
+                    {
+                        isHit = true;
+                        hitTimer = 0;
+                        hitCount++; // Increment hit counter
+                                    // --- RESET IF HIT 3 TIMES ---
+                        if (hitCount >= maxHits)
+                        {
+                            // Reset player position to starting point
+                            player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
+                            player.ChangeVelocityY(0, true);
+                            player.UpdateHitbox();
+
+                            // Reset hit state and counter
+                            hitCount = 0;
+                            isHit = false;
+                            hitTimer = 0;
+                            // Optionally: add a sound or visual cue here
+                        }
+                        break;
+                    }
+                }
+
+                // --- HIT ANIMATION LOGIC ---
+                if (isHit)
+                {
+                    hitTimer += gameTime.ElapsedGameTime.TotalSeconds;
+                    action = "hit";
+                    if (hitTimer >= hitDuration)
+                    {
+                        isHit = false;
+                        hitTimer = 0;
+                    }
+                }
 
 
                 player.playerAnimation(action, gameFrame);
@@ -421,17 +477,45 @@ namespace Final_Project
                 foreach (var s in oppsideWallSpikes)
                     _spriteBatch.Draw(s.Texture, s.Display, s.Source, s.Color);
 
+
+
                 foreach (var enemy in enemies)
                 {
                    
                     _spriteBatch.Draw(enemy.EnemyTexture, enemy.EnemyDisplay, enemy.EnemySource, enemy.EnemyColor, 0, Vector2.Zero, enemy.Dir < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
                 }
 
-                _spriteBatch.Draw(playerTexture, player.PlayerDisplay, player.PlayerSource, player.PlayerColor, 0, Vector2.Zero, direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0); // for player
+
+                // --- PLAYER FLASHING EFFECT ---
+                bool drawPlayer = true; // Default to drawing player
+                if (isHit) // if player is hit, apply flashing effect
+                {
+                    // Flashing: skip drawing player every other 0.1s interval
+                    double flashInterval = 0.1;
+                    int flashPhase = (int)(hitTimer / flashInterval) % 2;
+                    drawPlayer = flashPhase == 0;
+                }
+
+                if (drawPlayer)
+                {
+                    _spriteBatch.Draw(
+                        playerTexture,
+                        player.PlayerDisplay,
+                        player.PlayerSource,
+                        player.PlayerColor,
+                        0,
+                        Vector2.Zero,
+                        direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+                        0
+                    );
+                }
+
                 
 
                 foreach (var coin in spinningCoins)
                     coin.Draw(_spriteBatch);
+
+                DrawHealthBar();
 
             }
 
@@ -441,10 +525,34 @@ namespace Final_Project
                 _spriteBatch.Draw(whitePixel, snowRect, Color.White);
             }
 
-  
+            DrawHealthBar();
 
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        private void DrawHealthBar()
+        {
+            // Health bar position and size
+            int barWidth = 200;
+            int barHeight = 25;
+            int barX = 30;
+            int barY = 30;
+
+            // Calculate health ratio
+            float healthRatio = (float)(maxHits - hitCount) / maxHits;
+            int healthWidth = (int)(barWidth * healthRatio);
+
+            // Draw background (gray)
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX, barY, barWidth, barHeight), Color.Gray * 0.5f);
+            // Draw health (red)
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX, barY, healthWidth, barHeight), Color.Red);
+            // Draw border (black)
+            int borderThickness = 2;
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY - borderThickness, barWidth + borderThickness * 2, borderThickness), Color.Black); // Top
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY + barHeight, barWidth + borderThickness * 2, borderThickness), Color.Black); // Bottom
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX - borderThickness, barY, borderThickness, barHeight), Color.Black); // Left
+            _spriteBatch.Draw(whitePixel, new Rectangle(barX + barWidth, barY, borderThickness, barHeight), Color.Black); // Right
         }
 
         private bool IsColliding(Rectangle playerRect)

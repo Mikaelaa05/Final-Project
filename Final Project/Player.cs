@@ -135,6 +135,10 @@ namespace Final_Project
             {
                 PlayerAnimator(curframe, 8, 8);
             }
+            else if (action == "hit")
+            {
+                PlayerAnimator(curframe, 10, 10);
+            }
             else if (action == "falling")
             {
                 PlayerAnimator(curframe, 9, 9);

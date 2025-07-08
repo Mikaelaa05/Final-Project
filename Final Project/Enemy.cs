@@ -109,7 +109,7 @@ namespace Final_Project
 
       
         public Rectangle GetHitbox(int marginX, int marginTop, int marginBottom)
-        {
+        { 
             return new Rectangle(
                 enemyDisplay.X + marginX,
                 enemyDisplay.Y + marginTop,
@@ -122,6 +122,7 @@ namespace Final_Project
         {
             get => alive;
         }
+
         public void EnemyAnimator(int currentFrame, int startFrame, int endFrame)
         {
             int animationLength = endFrame - startFrame + 1;

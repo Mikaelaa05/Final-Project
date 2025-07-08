@@ -20,6 +20,7 @@ namespace Final_Project
 
         private Background background;
         private Texture2D backgroundTexture;
+        private Texture2D mainMenu;
 
         private Texture2D horizontalTileTexture;
         private Texture2D verticalTileTexture;
@@ -102,16 +103,81 @@ namespace Final_Project
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load raw assets only
             backgroundTexture = Content.Load<Texture2D>("snowice");
+            horizontalTileTexture = Content.Load<Texture2D>("Platform 2");
+            verticalTileTexture = Content.Load<Texture2D>("Platform 5");
+            playerTexture = Content.Load<Texture2D>("mika");
+            playerHitboxTexture = Content.Load<Texture2D>("hitbox");
+            spikeTexture = Content.Load<Texture2D>("spikes");
+            coinTexture = Content.Load<Texture2D>("coin");
+            backgroundmusic = Content.Load<Song>("PekoraPek");
+            jumpSound = Content.Load<SoundEffect>("jump");
+            runSound = Content.Load<SoundEffect>("run");
+            mainMenu = Content.Load<Texture2D>("easy");
+
+
+            whitePixel = new Texture2D(GraphicsDevice, 1, 1);
+            whitePixel.SetData(new[] { Color.White });
+            TextureWidth = playerTexture.Width / 8;
+            TextureHeight = playerTexture.Height / 3;
+
+            //// Call Level1 to set up all level objects
+            Level2();
+            //Level1();
+
+            // Snow particle setup
+            snowflakePositions = new Vector2[SnowflakeCount];
+            snowflakeSpeeds = new float[SnowflakeCount];
+            Random rand = new Random();
+            for (int i = 0; i < SnowflakeCount; i++)
+            {
+                snowflakePositions[i] = new Vector2(rand.Next(0, _graphics.PreferredBackBufferWidth), rand.Next(0, _graphics.PreferredBackBufferHeight));
+                snowflakeSpeeds[i] = (float)(rand.NextDouble() * 2 + 1);
+            }
+
+            // Player
+           
+            Rectangle playerSource = new Rectangle(0, 0, TextureWidth, TextureHeight);
+            Rectangle playerHitbox = playerSource;
+            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth + 60, TextureHeight + 45), playerSource, Color.White, playerHitbox);
+
+
+
+            // Music
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(backgroundmusic);
+            MediaPlayer.Volume = 0.1f;
+        }
+
+        public void Level1()
+        {
+            // Clear all lists to avoid duplication if Level1 is called again
+            tiles.Clear();
+            verticalTiles.Clear();
+            floorSpikes.Clear();
+            ceilingSpikes.Clear();
+            sideWallSpikes.Clear();
+            oppsideWallSpikes.Clear();
+            spinningCoins.Clear();
+
+            // Background
             background = new Background(
                 backgroundTexture,
                 new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight),
                 Color.White
             );
 
-            horizontalTileTexture = Content.Load<Texture2D>("Platform 2");
-            verticalTileTexture = Content.Load<Texture2D>("Platform 5");
+            // Coins
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(360, 475), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 475), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1480, 300), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(800, 725), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
 
+
+
+            // Tiles and platforms
             Rectangle horizontalSource = new Rectangle(3 * 128, 0, 128, 128);
             Rectangle verticalSource = new Rectangle(3 * 128, 0, 128, 128);
 
@@ -172,7 +238,7 @@ namespace Final_Project
                 tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
             }
 
-            spikeTexture = Content.Load<Texture2D>("spikes");
+            // Spikes
             Rectangle spikeFloorSource = new Rectangle(0, 0, 87, 87);
 
             floorSpikes.Add(new Spike(spikeTexture, new Rectangle(602, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
@@ -203,57 +269,175 @@ namespace Final_Project
             Rectangle oppsideWallSpikeSource = new Rectangle(3 * 87, 0, 87, 87);
             oppsideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(688, 430, tileWidth, tileHeight), oppsideWallSpikeSource, Color.White));
 
-            // Snow particle setup
-            whitePixel = new Texture2D(GraphicsDevice, 1, 1);
-            whitePixel.SetData(new[] { Color.White });
-
-            snowflakePositions = new Vector2[SnowflakeCount];
-            snowflakeSpeeds = new float[SnowflakeCount];
-            Random rand = new Random();
-            for (int i = 0; i < SnowflakeCount; i++)
-            {
-                snowflakePositions[i] = new Vector2(rand.Next(0, _graphics.PreferredBackBufferWidth), rand.Next(0, _graphics.PreferredBackBufferHeight));
-                snowflakeSpeeds[i] = (float)(rand.NextDouble() * 2 + 1);
-            }
-
-            coinTexture = Content.Load<Texture2D>("coin");
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(360, 475), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 475), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(1480, 300), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(800, 725), 64, 64));
-            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
-
-            playerTexture = Content.Load<Texture2D>("mika");
-            playerHitboxTexture = Content.Load<Texture2D>("hitbox");
-            TextureWidth = playerTexture.Width / 8;
-            TextureHeight = playerTexture.Height / 3;
-            Rectangle playerSource = new Rectangle(0, 0, TextureWidth, TextureHeight);
-            Rectangle playerHitbox = playerSource; // Initialize hitbox with the same size as the source rectangle
-
-            player = new Player(playerTexture, new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth + 60, TextureHeight + 45), playerSource, Color.White, playerHitbox);
-
-            backgroundmusic = Content.Load<Song>("PekoraPek");
-            MediaPlayer.IsRepeating = true;
-            MediaPlayer.Play(backgroundmusic);
-            MediaPlayer.Volume = 0.1f; // Set volume to 50%
-
-          jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
-          runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
-
             enemyCount = 3;
             enemies = new Enemy[enemyCount];
 
             //Enemies
-            for(int i = 0; i < enemyCount; i++)
+            for (int i = 0; i < enemyCount; i++)
             {
-                
-                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, TextureWidth + 60, TextureHeight + 45), new Rectangle(0, 0, TextureWidth, TextureHeight), Color.DarkRed,playerHitbox, 0, 0, 0);
+
+                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, TextureWidth + 60, TextureHeight + 45), new Rectangle(0, 0, TextureWidth, TextureHeight), Color.DarkRed, new Rectangle(0,0,0,0), 0, 0, 0);
                 enemies[i].UpdateHitbox();
             }
             enemies[0].setPath(0 + (43 * 15), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 3) - 10);
             enemies[1].setPath(0 + (43 * 12), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 8) - 10);
             enemies[2].setPath(0 + (43 * 6), 0 + (43 * 8), Window.ClientBounds.Height - (43 * 8) - 10);
+        }
 
+        public void Level2()
+        {
+            tiles.Clear();
+            verticalTiles.Clear();
+            floorSpikes.Clear();
+            ceilingSpikes.Clear();
+            sideWallSpikes.Clear();
+            oppsideWallSpikes.Clear();
+            spinningCoins.Clear();
+
+            background = new Background(
+                backgroundTexture,
+                new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight),
+                Color.White
+            );
+
+            // Coins
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(95, 300), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1490, 750), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(700, 100), 64, 64));
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(600, 330), 64, 64));
+
+            spinningCoins.Add(new Coin(coinTexture, new Vector2(1110, 750), 64, 64));
+
+
+
+
+            // Tiles and platforms
+            Rectangle horizontalSource = new Rectangle(3 * 128, 0, 128, 128);
+            Rectangle verticalSource = new Rectangle(3 * 128, 0, 128, 128);
+
+            for (int i = 0; i <= 40; i++) // floor tiles
+            {
+                Rectangle dest = new Rectangle(i * tileWidth, 860, tileWidth, tileHeight);
+                if (i == 28)
+                    tiles.Add(new GameTiles(verticalTileTexture, dest, verticalSource, Color.White));
+                else
+                    tiles.Add(new GameTiles(horizontalTileTexture, dest, horizontalSource, Color.White));
+            }
+
+            for (int i = 1; i <= 10; i++)
+            {
+                Rectangle dest = new Rectangle(28 * tileWidth, 860 - (i * tileHeight), tileWidth, tileHeight);
+                if (i <= 5)
+                {
+                    verticalTiles.Add(new GameTiles(verticalTileTexture, dest, verticalSource, Color.White));
+                }
+            }
+
+            GameTiles fifthVertical = verticalTiles[4];
+            for (int i = 1; i <= 11; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(fifthVertical.TileDisplay.X - (i * tileWidth), fifthVertical.TileDisplay.Y, tileWidth, tileHeight);
+
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+            for (int i = 19; i <= 22; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(fifthVertical.TileDisplay.X - (i * tileWidth), fifthVertical.TileDisplay.Y, tileWidth, tileHeight);
+
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+
+            for (int i = 5; i <= 8; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(fifthVertical.TileDisplay.X + (i * tileWidth), fifthVertical.TileDisplay.Y, tileWidth, tileHeight);
+
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+
+            for (int i = 5; i <= 15; i++)
+            {
+                Rectangle dest = new Rectangle(10 * tileWidth, 860 - (i * tileHeight), tileWidth, tileHeight);
+                verticalTiles.Add(new GameTiles(verticalTileTexture, dest, verticalSource, Color.White));
+            }
+
+            for (int i = 5; i <= 15; i++)
+            {
+                Rectangle dest = new Rectangle(22 * tileWidth, 860 - (i * tileHeight), tileWidth, tileHeight);
+                verticalTiles.Add(new GameTiles(verticalTileTexture, dest, verticalSource, Color.White));
+            }
+
+            GameTiles tenthVertical = verticalTiles[10];
+            for (int i = 7; i <= 10; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(tenthVertical.TileDisplay.X - (i * tileWidth), tenthVertical.TileDisplay.Y, tileWidth, tileHeight);
+                if (i == 10)
+                    tiles.Add(new GameTiles(tenthVertical.Texture, bridgeDest, tenthVertical.TileSource, tenthVertical.TileColor));
+                else
+                    tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+            for (int i = 1; i <= 8; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(tenthVertical.TileDisplay.X + (i * tileWidth), tenthVertical.TileDisplay.Y, tileWidth, tileHeight);
+
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+            for (int i = 19; i <= 26; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(tenthVertical.TileDisplay.X + (i * tileWidth), tenthVertical.TileDisplay.Y, tileWidth, tileHeight);
+
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+            GameTiles fifteenthVertical = verticalTiles[15];
+            for (int i = 1; i <= 20; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(fifteenthVertical.TileDisplay.X + (i * tileWidth), fifteenthVertical.TileDisplay.Y, tileWidth, tileHeight);
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+
+            for (int i = 1; i <= 4; i++)
+            {
+                Rectangle bridgeDest = new Rectangle(fifteenthVertical.TileDisplay.X - (i * tileWidth), fifteenthVertical.TileDisplay.Y, tileWidth, tileHeight);
+                tiles.Add(new GameTiles(verticalTileTexture, bridgeDest, verticalSource, Color.White));
+            }
+
+            // Spikes
+            Rectangle spikeFloorSource = new Rectangle(0, 0, 87, 87);
+
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(86, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(645, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(302, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
+
+
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1247, 174, tileWidth, tileHeight), spikeFloorSource, Color.White));
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1030, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
+
+
+            floorSpikes.Add(new Spike(spikeTexture, new Rectangle(1333, 820, tileWidth, tileHeight), spikeFloorSource, Color.White));
+
+
+
+            Rectangle sideWallSpikeSource = new Rectangle(1 * 87, 0, 87, 87);
+            sideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(988, 385, tileWidth, tileHeight), sideWallSpikeSource, Color.White));
+            sideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(172, 430, tileWidth, tileHeight), sideWallSpikeSource, Color.White));
+            sideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(988, 475, tileWidth, tileHeight), sideWallSpikeSource, Color.White));
+
+            Rectangle oppsideWallSpikeSource = new Rectangle(3 * 87, 0, 87, 87);
+            oppsideWallSpikes.Add(new Spike(spikeTexture, new Rectangle(904, 430, tileWidth, tileHeight), oppsideWallSpikeSource, Color.White));
+
+            enemyCount = 4;
+            enemies = new Enemy[enemyCount];
+
+            //Enemies
+            for (int i = 0; i < enemyCount; i++)
+            {
+
+                enemies[i] = new Enemy(Content.Load<Texture2D>("mika"), new Rectangle(100, 100, TextureWidth + 60, TextureHeight + 45), new Rectangle(0, 0, TextureWidth, TextureHeight), Color.DarkRed, new Rectangle(0,0,0,0), 0, 0, 0);
+                enemies[i].UpdateHitbox();
+            }
+            enemies[0].setPath(0 + (43 * 8), 0 + (43 * 25), Window.ClientBounds.Height - (43 * 18) - 10);
+            enemies[1].setPath(0 + (43 * 12), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 18) - 10);
+            enemies[2].setPath(0 + (43 * 6), 0 + (43 * 8), Window.ClientBounds.Height - (43 * 8) - 10);
+            enemies[3].setPath(0 + (43 * 12), 0 + (43 * 15), Window.ClientBounds.Height - (43 * 13) - 10);
         }
 
         protected override void Update(GameTime gameTime)
@@ -508,18 +692,18 @@ namespace Final_Project
                 GameData playerPos = new GameData();
                 playerPos.playerPos = player.PlayerDisplay;
 
-                //GameData[] enemyPos = new GameData[enemyLength];
-                //for (int i = 0; i < enemyLength; i++)
-                //{
-                //    enemyPos[i] = new GameData();
-                //    enemyPos[i].enemyPos = enemies[i].EnemyDisplay;
-                //}
+                GameData[] enemyPos = new GameData[enemyCount];
+                for (int i = 0; i < enemyCount; i++)
+                {
+                    enemyPos[i] = new GameData();
+                    enemyPos[i].enemyPos = enemies[i].EnemyDisplay;
+                }
 
                 XmlSerializer saveData = new XmlSerializer(typeof(GameData));
 
                 StreamWriter sw = new StreamWriter("game_save.txt");
                 saveData.Serialize(sw, playerPos);
-                //saveData.Serialize(sw, enemyPos);
+                saveData.Serialize(sw, enemyPos);
 
                 sw.Close();
 
@@ -540,13 +724,12 @@ namespace Final_Project
                 Console.WriteLine(playerPos.playerPos.X);
                 Console.WriteLine(playerPos.playerPos.Y);
 
-                //GameData[] enemyPos = (GameData[])loadData.Deserialize(sr);
-                //for (int i = 0; i < enemyLength; i++)
-                //{
-                //    enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
-                //    Console.WriteLine(enemyPos[i].enemyPos.X);
-                //    Console.WriteLine(enemyPos[i].enemyPos.Y);
-                //}
+                GameData[] enemyPos = (GameData[])loadData.Deserialize(sr);
+                for (int i = 0; i < enemyCount; i++)
+                {
+                    enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
+                    
+                }
                 sr.Close();
 
                 player.ChangeVelocityY(0, true); // Reset vertical velocity after loading
@@ -570,8 +753,7 @@ namespace Final_Project
 
             if (GameState == "menu")
             {
-                _spriteBatch.DrawString(Content.Load<SpriteFont>("MenuFont"), "Mika is Peak!!!", new Vector2(25, 25), Color.Black);
-                _spriteBatch.DrawString(Content.Load<SpriteFont>("MenuFont"), "Mika is Peak!!!", new Vector2(30, 30), Color.Magenta);
+                _spriteBatch.Draw(mainMenu, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
 
             }

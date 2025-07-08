@@ -718,12 +718,50 @@ namespace Final_Project
                 }
 
                 XmlSerializer saveDataArray = new XmlSerializer(typeof(GameData[]));
-
                 StreamWriter sw1 = new StreamWriter("enemy_save.txt");
                 saveDataArray.Serialize(sw1, enemyPos);
 
+                GameData playerHealth = new GameData();
+                playerHealth.playerHealth = hitCount;
+
+                XmlSerializer saveHealthData = new XmlSerializer(typeof(GameData));
+                StreamWriter sw2 = new StreamWriter("player_health.txt");
+                saveHealthData.Serialize(sw2, playerHealth);
+
+                GameData[] coinPos = new GameData[spinningCoins.Count];
+                for (int i = 0; i < spinningCoins.Count; i++)
+                {
+                    coinPos[i] = new GameData();
+                    coinPos[i].coinPos = spinningCoins[i].GetCollisionBox();
+                }
+
+                XmlSerializer saveCoinData = new XmlSerializer(typeof(GameData[]));
+                StreamWriter sw3 = new StreamWriter("coin_save.txt");
+                saveCoinData.Serialize(sw3, coinPos);
+
+                GameData cScore = new GameData();
+
+                XmlSerializer saveCoinScoreData = new XmlSerializer(typeof(GameData));
+                StreamWriter sw4 = new StreamWriter("coin_score.txt");
+                saveCoinScoreData.Serialize(sw4, cScore);
+
+                GameData[] enemyAlive = new GameData[enemyCount];
+                for (int i = 0; i < enemyCount; i++)
+                {
+                    enemyAlive[i] = new GameData();
+                    enemyAlive[i].enemyAlive = enemies[i].Alive;
+                }
+
+                XmlSerializer saveEnemyAliveData = new XmlSerializer(typeof(GameData[]));
+                StreamWriter sw5 = new StreamWriter("enemy_alive.txt");
+                saveEnemyAliveData.Serialize(sw5, enemyAlive);
+
                 sw.Close();
                 sw1.Close();
+                sw2.Close();
+                sw3.Close();
+                sw4.Close();
+                sw5.Close();
 
                 checkSave = true;
             }
@@ -738,6 +776,15 @@ namespace Final_Project
                 StreamReader sr = new StreamReader("player_save.txt");
                 XmlSerializer loadDataArray = new XmlSerializer(typeof(GameData[]));
                 StreamReader sr1 = new StreamReader("enemy_save.txt");
+                XmlSerializer loadHealthData = new XmlSerializer(typeof(GameData));
+                StreamReader sr2 = new StreamReader("player_health.txt");
+                XmlSerializer loadCoinData = new XmlSerializer(typeof(GameData[]));
+                StreamReader sr3 = new StreamReader("coin_save.txt");
+                XmlSerializer loadCoinScoreData = new XmlSerializer(typeof(GameData));
+                StreamReader sr4 = new StreamReader("coin_score.txt");
+                XmlSerializer loadEnemyAliveData = new XmlSerializer(typeof(GameData[]));
+                StreamReader sr5 = new StreamReader("enemy_alive.txt");
+
 
                 GameData playerPos = (GameData)loadData.Deserialize(sr);
                 player.SetPosition(playerPos.playerPos.X, playerPos.playerPos.Y);
@@ -750,10 +797,56 @@ namespace Final_Project
                     enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
                     
                 }
+
+                GameData playerHealth = (GameData)loadHealthData.Deserialize(sr2);
+                hitCount = playerHealth.playerHealth;
+                if (hitCount >= maxHits)
+                {
+                    hitCount = 0;
+                }
+
+                GameData[] coinPos = (GameData[])loadCoinData.Deserialize(sr3);
+                spinningCoins.Clear();
+                foreach (var coinData in coinPos)
+                {
+                    spinningCoins.Add(new Coin(coinTexture, coinData.coinPos.Location.ToVector2(), 32, 32));
+                }
+
+                GameData cScore = (GameData)loadCoinScoreData.Deserialize(sr4);
+                coinScore = cScore.score;
+
+                GameData[] loadedEnemyAlive = (GameData[])loadEnemyAliveData.Deserialize(sr5);
+                for (int i = 0; i < enemyCount; i++)
+                {
+
+                    if (!enemies[i].Alive)
+                    {
+                        enemies[i].SetPosition(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
+                    }
+                }
+
+                for (int i = 0; i < enemyCount; i++)
+                {
+                    if (loadedEnemyAlive[i].enemyAlive)
+                    {
+                        enemies[i].Revive(enemyPos[i].enemyPos.X, enemyPos[i].enemyPos.Y);
+                    }
+                    else
+                    {
+                        enemies[i].Death();
+                        enemies[i].SetPosition(-100, -100);
+                    }
+                }
+
+
                 sr.Close();
                 sr1.Close();
+                sr2.Close();
+                sr3.Close();
+                sr4.Close();
+                sr5.Close();
 
-                player.ChangeVelocityY(0, true); // Reset vertical velocity after loading
+                player.ChangeVelocityY(0, true);
 
                 checkLoad = true;
             }

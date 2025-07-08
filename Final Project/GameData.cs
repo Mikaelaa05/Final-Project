@@ -11,6 +11,9 @@ namespace Final_Project
     {
         public Rectangle playerPos;
         public Rectangle enemyPos;
-
+        public int playerHealth;
+        public Rectangle coinPos;
+        public int score;
+        public bool enemyAlive;
     }
 }

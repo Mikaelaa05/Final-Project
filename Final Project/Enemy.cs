@@ -212,5 +212,12 @@ namespace Final_Project
             enemyHitbox = new Rectangle (enemyDisplay.X + 55, enemyDisplay.Y + 15, (int)((float)enemyDisplay.Width * 0.3), (int)((float)enemyDisplay.Height * 0.8));
         }
 
+        public void Revive(int x, int y)
+        {
+            alive = true;
+            enemyAction = "idle";
+            SetPosition(x, y);
+        }
+
     }
 }

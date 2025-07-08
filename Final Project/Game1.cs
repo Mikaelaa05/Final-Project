@@ -213,6 +213,9 @@ namespace Final_Project
 
             KeyboardState state = Keyboard.GetState();
 
+
+            Rectangle originalplayer = player.PlayerDisplay;
+
             if (state.IsKeyDown(Keys.Escape)) Exit();
 
             if (state.IsKeyDown(Keys.F11) && !isFullScreen)

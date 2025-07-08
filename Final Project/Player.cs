@@ -15,12 +15,6 @@ namespace Final_Project
 
 
 
-        //public int HitboxMarginX = 25;      // Horizontal padding
-        //public int HitboxMarginTop = 15;    // Top padding
-        //public int HitboxMarginBottom = 5;  // Bottom padding
-
-
-
         public Player(
             Texture2D playerTexture,
             Rectangle playerDisplay,
@@ -124,6 +118,32 @@ namespace Final_Project
                 velocityY += newVelocityY;
            
 
+        }
+
+        public void playerAnimation(string action, int curframe)
+        {
+
+            if (action == "idle")
+            {
+                PlayerAnimator(curframe, 0, 3);
+            }
+            else if (action == "running")
+            {
+                PlayerAnimator(curframe, 4, 7);
+            }
+            else if (action == "jump")
+            {
+                PlayerAnimator(curframe, 8, 8);
+            }
+            else if (action == "falling")
+            {
+                PlayerAnimator(curframe, 9, 9);
+            }
+            else
+            {
+                PlayerAnimator(curframe, 0, 3); // Default to idle if action is unknown
+
+            }
         }
 
         public void UpdateHitbox()

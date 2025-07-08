@@ -52,6 +52,14 @@ namespace Final_Project
         private int tileWidth = 43;
         private int tileHeight = 43;
 
+        private bool isHit = false;
+        private double hitTimer = 0;
+        private const double hitDuration = 0.5; // seconds
+
+        // --- HIT COUNTER FOR RESET ---
+        private int hitCount = 0;
+        private const int maxHits = 3;
+
         // Snow particle system
         private Texture2D whitePixel;
         private Vector2[] snowflakePositions;
@@ -215,19 +223,20 @@ namespace Final_Project
             MediaPlayer.Play(backgroundmusic);
             MediaPlayer.Volume = 0.1f; // Set volume to 50%
 
-          jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
-          runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
-
-
+            jumpSound = Content.Load<SoundEffect>("jump"); // Load jump sound effect
+            runSound = Content.Load<SoundEffect>("run"); // Load walk sound effect
         }
 
         protected override void Update(GameTime gameTime)
         {
+
+            Color defaultPlayerColor = Color.White; 
+
+
             gameFrame++;
             if (gameFrame >= 999) gameFrame = 0;
 
             KeyboardState state = Keyboard.GetState();
-
 
             Rectangle originalplayer = player.PlayerDisplay;
 
@@ -246,12 +255,12 @@ namespace Final_Project
                 isFullScreen = false;
             }
 
-            for (int i = 0; i < SnowflakeCount; i++) 
+            for (int i = 0; i < SnowflakeCount; i++)
             {
                 snowflakePositions[i].Y += snowflakeSpeeds[i];
                 if (snowflakePositions[i].Y > _graphics.PreferredBackBufferHeight)
                 {
-                    snowflakePositions[i].Y = -5; 
+                    snowflakePositions[i].Y = -5;
                     snowflakePositions[i].X = new Random().Next(0, _graphics.PreferredBackBufferWidth);
                 }
             }
@@ -265,16 +274,11 @@ namespace Final_Project
             allSpikes.AddRange(sideWallSpikes);
             allSpikes.AddRange(oppsideWallSpikes);
 
-            
-
             spinningCoins.RemoveAll(c => c.Collected);
-            
-
 
             // Movement keys
             float moveSpeed = 4f;
             float jumpStrength = -10f;
-            
 
             player.UpdateHitbox();
 
@@ -285,9 +289,7 @@ namespace Final_Project
                 PlayerMove((int)moveSpeed, direction);
                 action = "running";
                 if (gameFrame % 25 == 0 && IsOnGround())
-                        // If jumping, play jump sound
-                            runSound.Play();
-                
+                    runSound.Play();
             }
             else if (state.IsKeyDown(Keys.D))
             {
@@ -309,17 +311,14 @@ namespace Final_Project
                 jumpSound.Play();
             }
 
-            
-
-            if(player.VelocityY > 2) //sets action to falling if velocity is going up
+            if (player.VelocityY > 2) //sets action to falling if velocity is going up
             {
                 action = "falling";
-            } else if (player.VelocityY < -2) //sets action to jump if velolocity is going down.
+            }
+            else if (player.VelocityY < -2) //sets action to jump if velolocity is going down.
             {
                 action = "jump";
             }
-
-            
 
             // Stop falling below ground (simple ground collision)
             if (!IsOnGround() || player.VelocityY < 0)
@@ -329,32 +328,72 @@ namespace Final_Project
                 player.MoveVertical((int)player.VelocityY, 1); // Move player vertically based on velocity
                 player.UpdateHitbox();
 
-                if (IsColliding(player.PlayerHitbox)) 
+                if (IsColliding(player.PlayerHitbox))
                 {
                     player.MoveVertical((int)player.VelocityY, -1);
                     player.ChangeVelocityY(1, true);
                 }
-
-
             }
-            else 
+            else
+            {
+                while (IsOnGround())
+                {
+                    player.MoveVertical(1, -1); // Move player up until not colliding with ground
+                    player.UpdateHitbox();
+                }
+                player.ChangeVelocityY(0, true); // Reset vertical velocity
+            }
+
+            playerAnimation(action, gameFrame);
+
+            foreach (var s in allSpikes)
+            {
+                if (player.PlayerHitbox.Intersects(s.Display))
+                {
+                    player.ChangeVelocityY(-5, true); // Apply knockback
+                    player.MoveHorizontal(10, direction * -1); // Move player away from spike
+                    player.UpdateHitbox();
+                    playerAnimation("jump", gameFrame);
+                }
+            }
+            foreach (var spike in allSpikes)
+            {
+                if (player.PlayerHitbox.Intersects(spike.Display) && !isHit)
+                {
+                    isHit = true;
+                    hitTimer = 0;
+                    hitCount++; // Increment hit counter
+
+                    // --- RESET IF HIT 3 TIMES ---
+                    if (hitCount >= maxHits)
                     {
+                        // Reset player position to starting point
+                        player.PlayerDisplay = new Rectangle(100, Window.ClientBounds.Height - (25 * 6), TextureWidth + 60, TextureHeight + 45);
+                        player.ChangeVelocityY(0, true);
+                        player.UpdateHitbox();
 
-                        while (IsOnGround())
-                        {
-
-                            player.MoveVertical(1, -1); // Move player up until not colliding with ground
-                            player.UpdateHitbox();
-                        }
-                        player.ChangeVelocityY(0, true); // Reset vertical velocity
-                                                         //if (action != "running")
-                                                         //    action = "idle";
+                        // Reset hit state and counter
+                        hitCount = 0;
+                        isHit = false;
+                        hitTimer = 0;
+                        // Optionally: add a sound or visual cue here
                     }
+                    break;
+                }
+            }
 
+            // --- HIT ANIMATION LOGIC ---
+            if (isHit)
+            {
+                hitTimer += gameTime.ElapsedGameTime.TotalSeconds;
+                action = "hit";
+                if (hitTimer >= hitDuration)
+                {
+                    isHit = false;
+                    hitTimer = 0;
+                }
+            }
 
-
-                playerAnimation(action, gameFrame);
-                
             base.Update(gameTime);
         }
 
@@ -383,8 +422,30 @@ namespace Final_Project
             foreach (var s in oppsideWallSpikes)
                 _spriteBatch.Draw(s.Texture, s.Display, s.Source, s.Color);
 
+            // --- PLAYER FLASHING EFFECT ---
+            bool drawPlayer = true; // Default to drawing player
+            if (isHit) // if player is hit, apply flashing effect
+            {
+                // Flashing: skip drawing player every other 0.1s interval
+                double flashInterval = 0.1;
+                int flashPhase = (int)(hitTimer / flashInterval) % 2;
+                drawPlayer = flashPhase == 0;
+            }
 
-            _spriteBatch.Draw(playerTexture, player.PlayerDisplay, player.PlayerSource, player.PlayerColor, 0, Vector2.Zero, direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0); // for player
+            if (drawPlayer)
+            {
+                _spriteBatch.Draw(
+                    playerTexture,
+                    player.PlayerDisplay,
+                    player.PlayerSource,
+                    player.PlayerColor,
+                    0,
+                    Vector2.Zero,
+                    direction < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+                    0
+                );
+            }
+
             _spriteBatch.Draw(playerHitboxTexture, player.PlayerHitbox, player.HitboxSource, Color.Red * 0.5f); // for player hitbox
 
             for (int i = 0; i < SnowflakeCount; i++)
@@ -393,12 +454,8 @@ namespace Final_Project
                 _spriteBatch.Draw(whitePixel, snowRect, Color.White);
             }
 
-     
-
             foreach (var coin in spinningCoins)
                 coin.Draw(_spriteBatch);
-
-            
 
             _spriteBatch.End();
             base.Draw(gameTime);
@@ -426,7 +483,6 @@ namespace Final_Project
             }
             return false;
         }
-
 
         private bool IsOnGround()
         {
@@ -460,15 +516,12 @@ namespace Final_Project
             player.UpdateHitbox();
             if (IsColliding(player.PlayerHitbox))
             {
-                player.MoveHorizontal(-steps, dir); 
-
+                player.MoveHorizontal(-steps, dir);
             }
         }
-        
 
         private void playerAnimation(string action, int curframe)
         {
-            
             if (action == "idle")
             {
                 player.PlayerAnimator(curframe, 0, 3);
@@ -485,15 +538,14 @@ namespace Final_Project
             {
                 player.PlayerAnimator(curframe, 9, 9);
             }
+            else if (action == "hit")
+            {
+                player.PlayerAnimator(curframe, 10, 10); // Use the correct frame(s) for your hit animation
+            }
             else
             {
                 player.PlayerAnimator(curframe, 0, 3); // Default to idle if action is unknown
-
-
-
-
             }
         }
-
     }
 }

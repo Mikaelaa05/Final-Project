@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Final_Project
 {
@@ -13,6 +14,13 @@ namespace Final_Project
         Color playerColor;
         float velocityY;
 
+        // Knockback variables
+        public Vector2 knockbackVelocity = Vector2.Zero;
+        public float knockbackDuration = 0f;
+        public Vector2 position;
+        public bool IsKnockbackActive;
+        public const float knockbackTime = 0.2f; // duration in seconds
+        public const float knockbackForce = 5f;
 
 
         //public int HitboxMarginX = 25;      // Horizontal padding
@@ -28,7 +36,7 @@ namespace Final_Project
             Color playerColor, Rectangle playerHitbox)
         {
             this.playerTexture = playerTexture;
-            this.playerDisplay = playerDisplay;
+            this.PlayerDisplay = playerDisplay;
             this.playerSource = playerSource;
             this.playerColor = playerColor;
             this.playerHitbox = playerHitbox;
@@ -41,16 +49,14 @@ namespace Final_Project
         }
         public Rectangle PlayerDisplay
         {
-            get => playerDisplay; 
+            get => playerDisplay;
+            set => playerDisplay = value;
         }
         public Rectangle PlayerSource
         {
             get => playerSource;
         }
-        public Color PlayerColor
-        {
-            get => playerColor;
-        }
+        public Color PlayerColor { get; set; } = Color.White;
 
         public Rectangle PlayerHitbox
         {
@@ -61,27 +67,26 @@ namespace Final_Project
         {
             get => hitboxSource;
         }
-        public float VelocityY { get => velocityY ;  }
+        public float VelocityY { get => velocityY; }
 
         public void MoveVertical(int steps, int dir)
         {
-            playerDisplay.Y += steps * dir;
+            PlayerDisplay = new Rectangle(PlayerDisplay.X, PlayerDisplay.Y + steps * dir, PlayerDisplay.Width, PlayerDisplay.Height);
         }
 
         public void MoveHorizontal(int steps, int dir)
         {
-            playerDisplay.X += steps * dir;
+            PlayerDisplay = new Rectangle(PlayerDisplay.X + steps * dir, PlayerDisplay.Y, PlayerDisplay.Width, PlayerDisplay.Height);
         }
 
         public void TeleportY(int dest)
         {
-            playerDisplay.Y = dest;
+            PlayerDisplay = new Rectangle(PlayerDisplay.X, dest, PlayerDisplay.Width, PlayerDisplay.Height);
         }
 
         public void SetPosition(int x, int y)
         {
-            playerDisplay.X = x;
-            playerDisplay.Y = y;
+            PlayerDisplay = new Rectangle(x, y, PlayerDisplay.Width, PlayerDisplay.Height);
         }
 
         public void SetSource(Rectangle newSource)
@@ -92,10 +97,10 @@ namespace Final_Project
         public Rectangle GetHitbox(int marginX, int marginTop, int marginBottom)
         {
             return new Rectangle(
-                playerDisplay.X + marginX,
-                playerDisplay.Y + marginTop,
-                playerDisplay.Width - 2 * marginX,
-                playerDisplay.Height - marginTop - marginBottom
+                PlayerDisplay.X + marginX,
+                PlayerDisplay.Y + marginTop,
+                PlayerDisplay.Width - 2 * marginX,
+                PlayerDisplay.Height - marginTop - marginBottom
             );
         }
 
@@ -112,7 +117,7 @@ namespace Final_Project
             playerSource = new Rectangle(frameX * textureX, frameY * textureY, textureX, textureY);
         }
 
-        
+
 
         public void ChangeVelocityY(float newVelocityY, bool setToggle = false)
         {
@@ -122,13 +127,18 @@ namespace Final_Project
             }
             else
                 velocityY += newVelocityY;
-           
+
 
         }
 
         public void UpdateHitbox()
         {
-            playerHitbox = new Rectangle (playerDisplay.X + 55, playerDisplay.Y + 15, (int)((float)playerDisplay.Width * 0.3), (int)((float)playerDisplay.Height * 0.8));
+            playerHitbox = new Rectangle(PlayerDisplay.X + 55, PlayerDisplay.Y + 15, (int)((float)PlayerDisplay.Width * 0.3), (int)((float)PlayerDisplay.Height * 0.8));
+        }
+
+        public void SetColor(Color color)
+        {
+            playerColor = color;
         }
 
     }

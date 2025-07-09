@@ -513,10 +513,6 @@ namespace Final_Project
                 }
                 else if (Keyboard.GetState().IsKeyDown(Keys.X))
                 {
-                    Load();
-                }
-                else if (Keyboard.GetState().IsKeyDown(Keys.C))
-                {
                     Exit();
                 }
             }

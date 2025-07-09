@@ -15,5 +15,6 @@ namespace Final_Project
         public Rectangle coinPos;
         public int score;
         public bool enemyAlive;
+        public int levelNumber;
     }
 }

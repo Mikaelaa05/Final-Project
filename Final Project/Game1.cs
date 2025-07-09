@@ -915,8 +915,8 @@ namespace Final_Project
                 }
 
 
-                _spriteBatch.DrawString(uiFont, "Coins Left: " + spinningCoins.Count, new Vector2(Window.ClientBounds.Width - 150, 0), Color.Black);
-                _spriteBatch.DrawString(uiFont, "Timer: " + (timer / (60 * 60)) + ":" + ((timer / 60) % 60), new Vector2(Window.ClientBounds.Width - 150, 18), Color.Black);
+                _spriteBatch.DrawString(uiFont, "Coins Left: " + spinningCoins.Count, new Vector2(Window.ClientBounds.Width - 250, 0), Color.Black);
+                _spriteBatch.DrawString(uiFont, "Timer: " + (timer / (60 * 60)) + ":" + ((timer / 60) % 60), new Vector2(Window.ClientBounds.Width - 250, 32), Color.Black);
 
                 foreach (var coin in spinningCoins)
                     coin.Draw(_spriteBatch);

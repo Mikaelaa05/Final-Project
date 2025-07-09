@@ -84,6 +84,10 @@ namespace Final_Project
         private Checkpoint[] checkpoint;
         private Texture2D checkpointTexture;
 
+        private SoundEffect coinSound;
+
+        private Texture2D winScreen;
+
         public Game1()
         {
 
@@ -125,6 +129,9 @@ namespace Final_Project
             mainMenu = Content.Load<Texture2D>("main menu");
             uiFont = Content.Load<SpriteFont>("ui");
             checkpointTexture = Content.Load<Texture2D>("flag");
+            coinSound = Content.Load<SoundEffect>("coinsound");
+            winScreen = Content.Load<Texture2D>("win");
+            
 
 
 
@@ -538,7 +545,7 @@ namespace Final_Project
                     isFullScreen = false;
                 }
 
-                
+
 
                 foreach (var coin in spinningCoins)
                     coin.Update(gameTime);
@@ -605,7 +612,7 @@ namespace Final_Project
 
                 if (state.IsKeyDown(Keys.F))
                 {
-                    if(player.Attackframes == -1)
+                    if (player.Attackframes == -1)
                         player.IncrementFrameCounter();
 
 
@@ -615,7 +622,7 @@ namespace Final_Project
                 {
                     action = "attack";
                     player.IncrementFrameCounter();
-                    
+
                 }
 
                 // Stop falling below ground (simple ground collision)
@@ -672,7 +679,7 @@ namespace Final_Project
                         player.MoveHorizontal(10, direction * -1);
                         player.UpdateHitbox();
                         action = "hit";
-                        
+
 
                     }
 
@@ -695,7 +702,7 @@ namespace Final_Project
 
                         }
                         break;
-                        
+
                     }
                 }
 
@@ -705,39 +712,41 @@ namespace Final_Project
                     {
                         coin.Collect();
                         coinScore++;
+                        coinSound.Play();
                         // Optionally: play a sound effect here
                     }
                 }
 
-                foreach (var e in enemies){
+                foreach (var e in enemies)
+                {
                     if (player.PlayerDisplay.Intersects(e.EnemyHitbox) && player.Attackframes > 0)
                         e.Death();
                     else if (player.PlayerHitbox.Intersects(e.EnemyHitbox) && e.Alive && !isHit)
                     {
-                            isHit = true;
-                            hitTimer = 0;
-                            hitCount++;
+                        isHit = true;
+                        hitTimer = 0;
+                        hitCount++;
 
-                            player.ChangeVelocityY(-4, true); // Apply knockback
-                            player.MoveHorizontal(10, direction * -1); // Move player away from spike
-                            player.UpdateHitbox();
-                            action = "hit";
+                        player.ChangeVelocityY(-4, true); // Apply knockback
+                        player.MoveHorizontal(10, direction * -1); // Move player away from spike
+                        player.UpdateHitbox();
+                        action = "hit";
 
-                            if (hitCount >= maxHits)
-                            {
+                        if (hitCount >= maxHits)
+                        {
                             // Reset player position to starting point
                             action = "death";
-                                player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
-                                player.ChangeVelocityY(0, true);
-                                player.UpdateHitbox();
-                                // Reset hit state and counter
-                                hitCount = 0;
-                                isHit = false;
-                                hitTimer = 0;
-                                // Optionally: add a sound or visual cue here
-                            }
-                            break;
-                        
+                            player.SetPosition(100, Window.ClientBounds.Height - (25 * 6));
+                            player.ChangeVelocityY(0, true);
+                            player.UpdateHitbox();
+                            // Reset hit state and counter
+                            hitCount = 0;
+                            isHit = false;
+                            hitTimer = 0;
+                            // Optionally: add a sound or visual cue here
+                        }
+                        break;
+
                     }
                 }
 
@@ -762,47 +771,56 @@ namespace Final_Project
                     }
                 }
                 if (currentLevel == 1 && spinningCoins.Count == 0)
-                    {
-                        Level2();
-                        player.SetPosition(100, 757);
-                        Save();
-                }
-
-                foreach(var c in checkpoint)
                 {
-                    c.checkCP();
-                    if (player.PlayerHitbox.Intersects(c.CheckpointDisplay))
-                    {
-                        c.collect();
-                        Save();
-                    }
+                    Level2();
+                    player.SetPosition(100, 757);
+                    Save();
                 }
+                if (currentLevel == 2 && spinningCoins.Count == 0)
+                {
+                    GameState = "win";
+                    if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                    {
+                        GameState = "play";
+                    }
 
-                player.playerAnimation(action, gameFrame);
-            }
+                }
+                    foreach (var c in checkpoint)
+                    {
+                        c.checkCP();
+                        if (player.PlayerHitbox.Intersects(c.CheckpointDisplay))
+                        {
+                            c.collect();
+                            Save();
+                        }
+                    }
+
+                    player.playerAnimation(action, gameFrame);
+                }
 
             
 
-            if (Keyboard.GetState().IsKeyDown(Keys.P) && !checkSave) // Save
-            {
-                Save();
-            }
-            else if (Keyboard.GetState().IsKeyUp(Keys.P))
-            {
-                checkSave = false;
-            }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.L) && !checkLoad) // Load
-            {
-                Load();
-            }
-            else if (Keyboard.GetState().IsKeyUp(Keys.L))
-            {
-                checkLoad = false;
-            }
+                if (Keyboard.GetState().IsKeyDown(Keys.P) && !checkSave) // Save
+                {
+                    Save();
+                }
+                else if (Keyboard.GetState().IsKeyUp(Keys.P))
+                {
+                    checkSave = false;
+                }
 
-            base.Update(gameTime);
-        }
+                if (Keyboard.GetState().IsKeyDown(Keys.L) && !checkLoad) // Load
+                {
+                    Load();
+                }
+                else if (Keyboard.GetState().IsKeyUp(Keys.L))
+                {
+                    checkLoad = false;
+                }
+
+                base.Update(gameTime);
+            }
         
         protected override void Draw(GameTime gameTime)
         {
@@ -815,6 +833,11 @@ namespace Final_Project
             {
                 _spriteBatch.Draw(mainMenu, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
+
+            }
+            else if (GameState == "win")
+            {
+                _spriteBatch.Draw(winScreen, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
             }
             else if (GameState == "play")
@@ -840,15 +863,15 @@ namespace Final_Project
 
                 foreach (var c in checkpoint)
                 {
-                    _spriteBatch.Draw(c.CheckpointTexture, c.CheckpointDisplay,c.CheckpointSource , c.CheckpointColor);
+                    _spriteBatch.Draw(c.CheckpointTexture, c.CheckpointDisplay, c.CheckpointSource, c.CheckpointColor);
                 }
 
 
 
                 foreach (var enemy in enemies)
                 {
-                   if(enemy.Alive)
-                    _spriteBatch.Draw(enemy.EnemyTexture, enemy.EnemyDisplay, enemy.EnemySource, enemy.EnemyColor, 0, Vector2.Zero, enemy.Dir < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
+                    if (enemy.Alive)
+                        _spriteBatch.Draw(enemy.EnemyTexture, enemy.EnemyDisplay, enemy.EnemySource, enemy.EnemyColor, 0, Vector2.Zero, enemy.Dir < 0 ? SpriteEffects.FlipHorizontally : SpriteEffects.None, 0);
                 }
 
 

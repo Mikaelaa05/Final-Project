@@ -79,6 +79,8 @@ namespace Final_Project
         private string GameState;
 
         bool checkSave, checkLoad;
+        private SpriteFont uiFont;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -117,12 +119,14 @@ namespace Final_Project
             jumpSound = Content.Load<SoundEffect>("jump");
             runSound = Content.Load<SoundEffect>("run");
             mainMenu = Content.Load<Texture2D>("easy");
+            uiFont = Content.Load<SpriteFont>("ui");
+
 
 
             whitePixel = new Texture2D(GraphicsDevice, 1, 1);
             whitePixel.SetData(new[] { Color.White });
             TextureWidth = playerTexture.Width / 8;
-            TextureHeight = playerTexture.Height / 3;
+            TextureHeight = playerTexture.Height / 4;
 
             //// Call Level1 to set up all level objects
             //Level2();
@@ -799,7 +803,8 @@ namespace Final_Project
                     );
                 }
 
-                
+
+                _spriteBatch.DrawString(uiFont, "Coins Left: " + spinningCoins.Count, new Vector2(Window.ClientBounds.Width - 150, 0), Color.Black);
 
                 foreach (var coin in spinningCoins)
                     coin.Draw(_spriteBatch);
@@ -813,6 +818,8 @@ namespace Final_Project
                 Rectangle snowRect = new Rectangle((int)snowflakePositions[i].X, (int)snowflakePositions[i].Y, 3, 3);
                 _spriteBatch.Draw(whitePixel, snowRect, Color.White);
             }
+
+            
 
             _spriteBatch.End();
             base.Draw(gameTime);

@@ -117,7 +117,7 @@ namespace Final_Project
 
             int animationLength = endFrame - startFrame + 1;
             int textureX = playerTexture.Width / 8;
-            int textureY = playerTexture.Height / 3;
+            int textureY = playerTexture.Height / 4;
             currentFrame = (currentFrame / 6) % animationLength;
 
             int frameX = (startFrame + currentFrame) % 8;
@@ -146,6 +146,10 @@ namespace Final_Project
             if (action == "idle")
             {
                 PlayerAnimator(curframe, 0, 3);
+            }
+            else if (action == "sprint")
+            {
+                PlayerAnimator(curframe, 24, 27);
             }
             else if (action == "running")
             {

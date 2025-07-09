@@ -63,7 +63,7 @@ namespace Final_Project
         private int hitCount = 0;
         private const int maxHits = 3;
 
-        private int currentLevel = 1;
+        private int currentLevel;
 
         private int tileWidth = 43;
         private int tileHeight = 43;
@@ -681,6 +681,13 @@ namespace Final_Project
                     }
                 }
 
+                foreach (Enemy e in enemies)
+                {
+                    e.EnemyPathing();
+                    e.UpdateHitbox();
+                    e.enemyAnimation(e.EnemyAction, gameFrame);
+                }
+
                 // --- HIT ANIMATION LOGIC ---
                 if (isHit)
                 {
@@ -702,12 +709,7 @@ namespace Final_Project
                 player.playerAnimation(action, gameFrame);
             }
 
-            foreach(Enemy e in enemies)
-            {
-                e.EnemyPathing();
-                e.UpdateHitbox();
-                e.enemyAnimation(e.EnemyAction, gameFrame);
-            }
+            
 
             if (Keyboard.GetState().IsKeyDown(Keys.P) && !checkSave) // Save
             {

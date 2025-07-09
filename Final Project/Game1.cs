@@ -126,7 +126,7 @@ namespace Final_Project
             backgroundmusic = Content.Load<Song>("PekoraPek");
             jumpSound = Content.Load<SoundEffect>("jump");
             runSound = Content.Load<SoundEffect>("run");
-            mainMenu = Content.Load<Texture2D>("easy");
+            mainMenu = Content.Load<Texture2D>("main menu");
             uiFont = Content.Load<SpriteFont>("ui");
             checkpointTexture = Content.Load<Texture2D>("flag");
             coinSound = Content.Load<SoundEffect>("coinsound");
@@ -507,9 +507,13 @@ namespace Final_Project
 
             if (GameState == "menu")
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                if (Keyboard.GetState().IsKeyDown(Keys.Z))
                 {
                     GameState = "play";
+                }
+                else if (Keyboard.GetState().IsKeyDown(Keys.X))
+                {
+                    Exit();
                 }
             }
             else if (GameState == "play")

@@ -103,7 +103,7 @@ namespace Final_Project
             _graphics.PreferredBackBufferWidth = 1590;
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
-            timer = 2 * 60;
+            timer = 180 * 60;
                 
                 //180 * 60;
 

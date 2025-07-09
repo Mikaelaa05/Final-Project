@@ -298,6 +298,21 @@ namespace Final_Project
             checkpoint[0] = new Checkpoint(checkpointTexture, new Rectangle(43 * 30, Window.ClientBounds.Height - 43 * 7, 43, 43), checkpointSource, Color.White);
             checkpoint[1] = new Checkpoint(checkpointTexture, new Rectangle(0, Window.ClientBounds.Height - 43 * 2, 43, 43), checkpointSource, Color.White);
 
+            verticalTiles.Add(new GameTiles(
+             whitePixel, // or any texture, since it's invisible
+             new Rectangle(0, 0, 1, Window.ClientBounds.Height),
+             new Rectangle(0, 0, 1, 1), // source rectangle, not important for invisible
+             Color.Transparent // or Color.White * 0f for full transparency
+            ));
+
+            // Add invisible right border tile
+            verticalTiles.Add(new GameTiles(
+                whitePixel,
+                new Rectangle(Window.ClientBounds.Width - 1, 0, 1, Window.ClientBounds.Height),
+                new Rectangle(0, 0, 1, 1),
+                Color.Transparent
+            ));
+
         }
 
         public void Level2()
@@ -462,6 +477,21 @@ namespace Final_Project
 
             checkpoint[0] = new Checkpoint(checkpointTexture, new Rectangle(43 * 15, Window.ClientBounds.Height - 43 * 17, 43, 43), checkpointSource, Color.White);
             checkpoint[1] = new Checkpoint(checkpointTexture, new Rectangle(0, Window.ClientBounds.Height - 43 * 12, 43, 43), checkpointSource, Color.White);
+
+            verticalTiles.Add(new GameTiles(
+             whitePixel, // or any texture, since it's invisible
+             new Rectangle(0, 0, 1, Window.ClientBounds.Height),
+             new Rectangle(0, 0, 1, 1), // source rectangle, not important for invisible
+             Color.Transparent // or Color.White * 0f for full transparency
+            ));
+
+            // Add invisible right border tile
+            verticalTiles.Add(new GameTiles(
+                whitePixel,
+                new Rectangle(Window.ClientBounds.Width - 1, 0, 1, Window.ClientBounds.Height),
+                new Rectangle(0, 0, 1, 1),
+                Color.Transparent
+            ));
         }
 
         protected override void Update(GameTime gameTime)

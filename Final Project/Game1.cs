@@ -73,7 +73,7 @@ namespace Final_Project
         private Vector2[] snowflakePositions;
         private float[] snowflakeSpeeds;
         private const int SnowflakeCount = 100;
-
+         
         private int enemyCount;
 
         private string GameState;
@@ -88,6 +88,8 @@ namespace Final_Project
 
         private Texture2D winScreen;
 
+        private int timer;
+
         public Game1()
         {
 
@@ -101,6 +103,9 @@ namespace Final_Project
             _graphics.PreferredBackBufferWidth = 1590;
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
+            timer = 2 * 60;
+                
+                //180 * 60;
 
             action = "idle"; // No enemies in this level
             GameState = "menu";
@@ -516,6 +521,13 @@ namespace Final_Project
                     Exit();
                 }
             }
+
+            else if (GameState == "win" || GameState == "death")
+            {
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Z)) { Exit(); }
+            }
+
             else if (GameState == "play")
             {
                 gameFrame++;
@@ -781,18 +793,24 @@ namespace Final_Project
                     }
 
                 }
-                    foreach (var c in checkpoint)
+                foreach (var c in checkpoint)
+                {
+                    c.checkCP();
+                    if (player.PlayerHitbox.Intersects(c.CheckpointDisplay))
                     {
-                        c.checkCP();
-                        if (player.PlayerHitbox.Intersects(c.CheckpointDisplay))
-                        {
-                            c.collect();
-                            Save();
-                        }
+                        c.collect();
+                        Save();
                     }
-
-                    player.playerAnimation(action, gameFrame);
                 }
+
+                timer--;
+                if (timer <= 0)
+                {
+                    GameState = "death";
+                }
+
+                player.playerAnimation(action, gameFrame);
+            }
 
             
 
@@ -835,7 +853,8 @@ namespace Final_Project
             {
                 _spriteBatch.Draw(winScreen, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
-            }
+            } else if(GameState == "death")
+                _spriteBatch.Draw(Content.Load<Texture2D>("death"), new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
             else if (GameState == "play")
             {
 
@@ -897,6 +916,7 @@ namespace Final_Project
 
 
                 _spriteBatch.DrawString(uiFont, "Coins Left: " + spinningCoins.Count, new Vector2(Window.ClientBounds.Width - 150, 0), Color.Black);
+                _spriteBatch.DrawString(uiFont, "Timer: " + (timer / (60 * 60)) + ":" + ((timer / 60) % 60), new Vector2(Window.ClientBounds.Width - 150, 18), Color.Black);
 
                 foreach (var coin in spinningCoins)
                     coin.Draw(_spriteBatch);

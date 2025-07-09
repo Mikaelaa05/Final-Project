@@ -81,8 +81,12 @@ namespace Final_Project
         bool checkSave, checkLoad;
         private SpriteFont uiFont;
 
+        private Checkpoint[] checkpoint;
+        private Texture2D checkpointTexture;
+
         public Game1()
         {
+
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
@@ -120,6 +124,7 @@ namespace Final_Project
             runSound = Content.Load<SoundEffect>("run");
             mainMenu = Content.Load<Texture2D>("easy");
             uiFont = Content.Load<SpriteFont>("ui");
+            checkpointTexture = Content.Load<Texture2D>("flag");
 
 
 
@@ -286,6 +291,13 @@ namespace Final_Project
             enemies[0].setPath(0 + (43 * 15), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 3) - 10);
             enemies[1].setPath(0 + (43 * 12), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 8) - 10);
             enemies[2].setPath(0 + (43 * 6), 0 + (43 * 8), Window.ClientBounds.Height - (43 * 8) - 10);
+
+            checkpoint = new Checkpoint[2];
+            Rectangle checkpointSource = new Rectangle(0, 0, checkpointTexture.Width / 2, checkpointTexture.Height);
+
+            checkpoint[0] = new Checkpoint(checkpointTexture, new Rectangle(43 * 30, Window.ClientBounds.Height - 43 * 7, 43, 43), checkpointSource, Color.White);
+            checkpoint[1] = new Checkpoint(checkpointTexture, new Rectangle(0, Window.ClientBounds.Height - 43 * 2, 43, 43), checkpointSource, Color.White);
+
         }
 
         public void Level2()
@@ -444,6 +456,12 @@ namespace Final_Project
             enemies[1].setPath(0 + (43 * 12), 0 + (43 * 20), Window.ClientBounds.Height - (43 * 18) - 10);
             enemies[2].setPath(0 + (43 * 6), 0 + (43 * 8), Window.ClientBounds.Height - (43 * 8) - 10);
             enemies[3].setPath(0 + (43 * 12), 0 + (43 * 15), Window.ClientBounds.Height - (43 * 13) - 10);
+
+            checkpoint = new Checkpoint[2];
+            Rectangle checkpointSource = new Rectangle(0, 0, checkpointTexture.Width / 2, checkpointTexture.Height);
+
+            checkpoint[0] = new Checkpoint(checkpointTexture, new Rectangle(43 * 15, Window.ClientBounds.Height - 43 * 17, 43, 43), checkpointSource, Color.White);
+            checkpoint[1] = new Checkpoint(checkpointTexture, new Rectangle(0, Window.ClientBounds.Height - 43 * 12, 43, 43), checkpointSource, Color.White);
         }
 
         protected override void Update(GameTime gameTime)
@@ -685,6 +703,8 @@ namespace Final_Project
                     }
                 }
 
+
+
                 foreach (Enemy e in enemies)
                 {
                     e.EnemyPathing();
@@ -708,6 +728,16 @@ namespace Final_Project
                         Level2();
                         player.SetPosition(100, 757);
                         Save();
+                }
+
+                foreach(var c in checkpoint)
+                {
+                    c.checkCP();
+                    if (player.PlayerHitbox.Intersects(c.CheckpointDisplay))
+                    {
+                        c.collect();
+                        Save();
+                    }
                 }
 
                 player.playerAnimation(action, gameFrame);
@@ -769,6 +799,11 @@ namespace Final_Project
 
                 foreach (var s in oppsideWallSpikes)
                     _spriteBatch.Draw(s.Texture, s.Display, s.Source, s.Color);
+
+                foreach (var c in checkpoint)
+                {
+                    _spriteBatch.Draw(c.CheckpointTexture, c.CheckpointDisplay,c.CheckpointSource , c.CheckpointColor);
+                }
 
 
 
